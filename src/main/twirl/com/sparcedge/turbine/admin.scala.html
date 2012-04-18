@@ -1,0 +1,72 @@
+<html>
+	<head>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+		<script type="text/javascript">
+
+			$(document).ready(function() { 
+				loadNodeList();
+			});
+
+			var loadNodeList = function() {
+				$.getJSON('/list-nodes', function(data) {
+					var nodeList = $('#node-list');
+					nodeList.empty();
+					$.each(data['turbine-nodes'], function(key, node) {
+						var $btn = $('<input/>').attr({
+							type: 'submit',
+							value: 'Delete',
+							onclick: 'deleteTurbineNode("' + node.host + '","' + node.port + '");loadNodeList();'
+						});
+						nodeList.append($('<li>').text(
+							'Host: ' + node.host + ':' + node.port + " -- Actors: " + node.actors
+						).append($btn));
+					});
+				});
+			};
+
+			var addTurbineNode = function(host, port) {
+				var data = {
+					"turbine-nodes": [{
+						host: host,
+						port: parseInt(port)
+					}]
+				}
+				$.post('/add-nodes', JSON.stringify(data), function(data) {
+					//Error Handling
+				}, "json");
+			};
+
+			var deleteTurbineNode = function(host, port) {
+				var data = {
+					"turbine-nodes": [{
+						host: host,
+						port: parseInt(port)
+					}]
+				}
+				$.post('/remove-nodes', JSON.stringify(data), function(data) {
+					//Error Handling
+				}, "json");
+			};
+
+			var addTurbineNodeFromInput = function() {
+				var iHost = $('#input-host');
+				var iPort = $('#input-port'); 
+				addTurbineNode(iHost.val(), iPort.val());
+				loadNodeList();
+				iHost.empty();
+				iPort.empty();
+			}
+
+		</script>
+	</head>
+	<body>
+		<h1>Turbine Node List</h1>
+		<ul id="node-list"></ul>
+		<div>
+			<h2>Add Turbine Node</h2>
+			Host: <input id="input-host" type="text" />
+			Port: <input id="input-port" type="text" />
+			<input type="submit" value="Add" onclick="addTurbineNodeFromInput()" />
+		</div>
+	</body>
+</html>
