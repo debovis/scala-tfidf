@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin id="myplugins" name="My test plugins for Nutch"
+     version="0.0.1" provider-name="mycompany.com">
+
+   <runtime>
+      <library name="myplugins.jar">
+         <export name="*"/>
+      </library>
+   </runtime>
+
+   <extension id="com.mycompany.nutch.indexing.InvalidUrlIndexFilter"
+       name="Invalid URL Index Filter"
+       point="org.apache.nutch.indexer.IndexingFilter">
+     <implementation id="MyPluginsInvalidUrlFilter"
+         class="net.sf.jtmt.indexers.nutch.plugins.indexing.InvalidUrlIndexFilter"/>
+   </extension>
+   
+   <extension id="com.mycompany.nutch.parsing.TagExtractorParseFilter"
+       name="Tag Extractor Parse Filter"
+       point="org.apache.nutch.parse.HtmlParseFilter">
+     <implementation id="MyPluginsTagExtractorParseFilter"
+         class="net.sf.jtmt.indexers.nutch.plugins.parsing.TagExtractorParseFilter"/>
+   </extension>
+   
+   <extension id="com.mycompany.nutch.parsing.TagExtractorIndexFilter"
+       name="Tag Extractor Index Filter"
+       point="org.apache.nutch.indexer.IndexingFilter">
+     <implementation id="MyPluginsTagExtractorIndexFilter"
+         class="net.sf.jtmt.indexers.nutch.plugins.indexing.TagExtractorIndexFilter"/>
+   </extension>
+</plugin>

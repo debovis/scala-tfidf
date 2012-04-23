@@ -1,0 +1,188 @@
+<project name="jtmt" default="_init" basedir=".">
+<!-- $Id$ -->
+<!-- $Source$ -->
+  <target name="_init">
+  <property file="${user.home}/.m2/maven.properties"/>
+  <property name="maven.src.dir" value="src/main/java"/>
+  <property name="maven.src-gen.dir" value="target/src-gen"/>
+  <property name="maven.build.output" value="target/classes"/>
+  <property name="maven.build.directory" value="target"/>
+  <property name="maven.build.final.name" value="multicore-1.0-SNAPSHOT"/>
+  <property name="maven.test.reports" value="${maven.build.directory}/test-reports"/>
+  <property name="maven.test.output" value="target/test-classes"/>
+  <property name="maven.repo.local" value="${user.home}/.m2/repository"/>
+  <property name="kilim.prefix" value="net.sf.jtmt.concurrent.kilim"/>
+  <property name="af.prefix" value="net.sf.jtmt.concurrent.actorfoundry"/>
+  <path id="build.classpath">
+    <fileset dir="${maven.repo.local}">
+      <include name="fj/fj/2.16/fj-2.16.jar"/>
+      <include name="kilim/kilim/0.5/kilim-0.5.jar"/>
+      <!-- kilim requires asm 2.2.3 -->
+      <include name="asm/asm-all/2.2.3/asm-all-2.2.3.jar"/>
+      <include name="org/jetlang/jetlang/0.1.6/jetlang-0.1.6.jar"/>
+      <include name="org/actorsguildframework/actorsguildframework/0.5.1-SNAPSHOT/actorsguildframework-0.5.1-SNAPSHOT.jar"/>
+      <!-- actorsguild requires asm 3.1 (runtime) -->
+      <!--<include name="asm/asm-all/3.1/asm-all-3.1.jar"/>-->
+      <!-- actorfoundry comes prepackaged with kilim -->
+      <include name="osl/foundry/actorfoundry/1.0/actorfoundry-1.0.jar"/>
+      <include name="velocity/velocity/1.4/velocity-1.4.jar"/>
+      <include name="commons-collections/commons-collections/3.2.1/commons-collections-3.2.1.jar"/>
+      <!-- jini/blitz requirements -->
+      <include name="com/sun/jini/jsk-lib/2.1/jsk-lib-2.1.jar"/>
+      <include name="com/sun/jini/jsk-platform/2.1/jsk-platform-2.1.jar"/>
+      <!-- hadoop requirements -->
+    </fileset>
+  </path>
+  <!-- USED BY: kilim, actorfoundry -->
+  <path id="weave.classpath">
+    <pathelement location="${maven.build.output}"/>
+    <fileset dir="${maven.repo.local}">
+      <include name="kilim/kilim/0.5/kilim-0.5.jar"/>
+      <include name="asm/asm-all/2.2.3/asm-all-2.2.3.jar"/>
+      <include name="osl/foundry/actorfoundry/1.0/actorfoundry-1.0.jar"/>
+   </fileset>
+  </path>
+  </target>
+  <!-- USED-BY: actorfoundry -->
+  <target name="check-local-constraints" depends="_init" description="Check local constraints">
+    <apt srcdir="${maven.src.dir}/net/sf/jtmt/concurrent/actorfoundry"
+         compile="false"
+         classpathref="build.classpath"
+         debug="true"
+         factory="osl.foundry.preprocessor.LocalSynchConstAPF"
+         factorypathref="build.classpath"/>
+  </target>
+  <!-- USED BY: actorfoundry -->
+  <target name="generate-af-executors" depends="_init" description="Generate ActorFoundry Executors">
+    <delete dir="${maven.src-gen.dir}"/>
+    <mkdir dir="${maven.src-gen.dir}"/>
+    <copy file="src/main/resources/velocity.properties" todir="."/>
+    <javadoc private="true"
+         doclet="osl.foundry.preprocessor.ExecutorCodeGen"
+         docletpathref="build.classpath"
+         classpathref="build.classpath"
+         sourcepath="${maven.src.dir}"
+         packagenames="net.sf.jtmt.concurrent.actorfoundry">
+      <arg line="-outdir ${maven.src-gen.dir}"/>
+    </javadoc>
+    <delete file="velocity.properties"/>
+  </target>
+  <!-- USED BY: actorfoundry -->
+  <target name="compile-af-executors" depends="_init" description="Compile ActorFoundry Executors">
+    <javac srcdir="${maven.src-gen.dir}"
+           destdir="${maven.build.output}"
+           debug="on"
+           fork="on">
+      <classpath refid="build.classpath"/>
+    </javac>
+  </target>
+  <!-- USED BY: kilim, actorfoundry -->
+  <target name="weave-classes" depends="_init" description="Enhance classes using Kilim Weaver">
+    <java classname="kilim.tools.Weaver" fork="yes">
+      <classpath refid="weave.classpath"/>
+      <assertions>
+        <enable/>
+      </assertions>
+      <arg value="-x"/>
+      <arg value="ExInvalid|test"/>
+      <arg value="-d"/>
+      <arg value="${maven.build.output}"/>
+      <arg line="${kilim.prefix}.ActorManager ${kilim.prefix}.Actor ${kilim.prefix}.DownloadActor ${kilim.prefix}.IndexActor ${kilim.prefix}.WriteActor ${af.prefix}.ActorManagerExecutor ${af.prefix}.DownloadActorExecutor ${af.prefix}.IndexActorExecutor ${af.prefix}.WriteActorExecutor"/>
+    </java>
+  </target>
+  <!-- USED BY: hadoop -->
+  <!-- Added Hadoop Job launcher -->
+  <target name="build-hadoop-query-coc-analyzer" 
+      depends="_init" 
+      description="Build Query Cooccurrence Analyzer job on Hadoop">
+    <!-- create new directory target/lib and copy required runtime
+         dependencies for the hadoop job into it -->
+    <delete dir="${maven.build.directory}/jars"/>
+    <mkdir dir="${maven.build.directory}/jars/lib"/>
+    <copy todir="${maven.build.directory}/jars/lib" flatten="true">
+      <fileset dir="${maven.repo.local}">
+        <include name="commons-lang/commons-lang/2.1/commons-lang-2.1.jar"/>
+      </fileset>
+    </copy>
+    <!-- create jar file for queryterm-cooccurrence-analyzer -->
+    <jar jarfile="${maven.build.directory}/query-coc-analyzer.jar">
+      <fileset dir="${maven.build.directory}/classes"/>
+      <fileset dir="${maven.build.directory}/jars"/>
+      <manifest>
+        <attribute name="Main-Class"
+          value="net/sf/jtmt/concurrent/hadoop/querycocanalyzer/QueryTermCoOccurrenceAnalyzer"/>
+      </manifest>
+    </jar>
+    <delete dir="${maven.build.directory}/jars"/>
+  </target>
+  <target name="build-hadoop-phrase-extractor" 
+      depends="_init" description="Build Phrase Extractor job on Hadoop">
+    <!-- create new directory target/lib and copy required runtime
+         dependencies for the hadoop job into it -->
+    <delete dir="${maven.build.directory}/jars"/>
+    <mkdir dir="${maven.build.directory}/jars/lib"/>
+    <copy todir="${maven.build.directory}/jars/lib" flatten="true">
+      <fileset dir="${maven.repo.local}">
+        <include name="commons-lang/commons-lang/2.1/commons-lang-2.1.jar"/>
+        <include name="commons-io/commons-io/1.2/commons-io-1.2.jar"/>
+        <include name="mysql/mysql-connector-java/5.0.5/mysql-connector-java-5.0.5.jar"/>
+        <include name="commons-math/commons-math/2.0/commons-math-2.0.jar"/>
+      </fileset>
+    </copy>
+    <!-- create jar file for phrase-extractor -->
+    <jar jarfile="${maven.build.directory}/phrase-extractor.jar">
+      <fileset dir="${maven.build.directory}/classes"/>
+      <fileset dir="${maven.build.directory}/jars"/>
+      <manifest>
+        <attribute name="Main-Class"
+          value="net/sf/jtmt/phrase/PhraseExtractor"/>
+      </manifest>
+    </jar>
+  </target>
+  <target name="build-td-matrix-generator" 
+      depends="_init" description="TD-Matrix Generator on Hadoop">
+    <!-- create new directory target/lib and copy required runtime
+         dependencies for the hadoop job into it -->
+    <delete dir="${maven.build.directory}/jars"/>
+    <mkdir dir="${maven.build.directory}/jars/lib"/>
+    <copy todir="${maven.build.directory}/jars/lib" flatten="true">
+      <fileset dir="${maven.repo.local}">
+        <include name="org/apache/lucene/lucene-core/2.4.0/lucene-core-2.4.0.jar"/>
+        <include name="org/apache/lucene/lucene-analyzers/2.3.0/lucene-analyzers-2.3.0.jar"/>
+        <include name="commons-lang/commons-lang/2.1/commons-lang-2.1.jar"/>
+      </fileset>
+    </copy>
+    <!-- create jar file for tdm-generator -->
+    <jar jarfile="${maven.build.directory}/tdm-generator.jar">
+      <fileset dir="${maven.build.directory}/classes"/>
+      <fileset dir="${maven.build.directory}/jars"/>
+      <manifest>
+        <attribute name="Main-Class"
+          value="net/sf/jtmt/indexers/hadoop/TermDocumentMatrixGenerator"/>
+      </manifest>
+    </jar>
+  </target>
+  <target name="build-ha-clusterer" 
+      depends="_init" 
+      description="Hierarchical Agglomerative Clusterer on Hadoop">
+    <!-- create new directory target/lib and copy required runtime
+         dependencies for the hadoop job into it -->
+    <delete dir="${maven.build.directory}/jars"/>
+    <mkdir dir="${maven.build.directory}/jars/lib"/>
+    <copy todir="${maven.build.directory}/jars/lib" flatten="true">
+      <fileset dir="${maven.repo.local}">
+        <include name="commons-lang/commons-lang/2.1/commons-lang-2.1.jar"/>
+        <include name="commons-math/commons-math/2.0/commons-math-2.0.jar"/>
+      </fileset>
+    </copy>
+    <!-- create jar file for ha-clusterer -->
+    <jar jarfile="${maven.build.directory}/ha-clusterer.jar">
+      <fileset dir="${maven.build.directory}/classes"/>
+      <fileset dir="${maven.build.directory}/jars"/>
+      <manifest>
+        <attribute name="Main-Class"
+          value="net/sf/jtmt/clustering/hadoop/agglomerative/HierarchicalAgglomerativeClusterer"/>
+      </manifest>
+    </jar>
+  </target>
+</project>

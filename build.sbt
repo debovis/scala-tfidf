@@ -25,5 +25,6 @@ libraryDependencies ++= Seq (
 	"org.slf4j" % "slf4j-api" % "1.6.1",
 	"ch.qos.logback" % "logback-classic" % "0.9.29",
 	"org.scalatest" %% "scalatest" % "1.6.1" % "test",
-	"org.mockito" % "mockito-all" % "1.9.0" % "test"
+	"org.mockito" % "mockito-all" % "1.9.0" % "test",
+	"org.apache.lucene" % "lucene-core" % "3.5.0"
 ) 

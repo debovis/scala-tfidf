@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="myplugins" default="jar">
+  <import file="../build-plugin.xml"/>
+
+  <!-- for JUnit testing -->
+  <echo message="${build.test}/data"/>
+  <mkdir dir="${build.test}/data"/>
+  <copy file="data/testpage.html" todir="${build.test}/data"/>
+</project>

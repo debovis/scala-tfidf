@@ -1,0 +1,23 @@
+Suppose your data consist of fruits, described by their color and shape.  Bayesian classifiers operate by saying "If you see a fruit that is red and round, which type of fruit is it most likely to be, based on the observed data sample? In future, classify red and round fruit as that type of fruit."  
+
+A difficulty arises when you have more than a few variables and classes -- you would require an enormous number of observations (records) to estimate these probabilities.
+
+Naive Bayes classification gets around this problem by not requiring that you have lots of observations for each possible combination of the variables.  Rather, the variables are assumed to be independent of one another and, therefore the probability that a fruit that is red, round, firm, 3" in diameter, etc. will be an apple can be calculated from the independent probabilities that a fruit is red, that it is round, that it is firm, that it is 3" in diameter, etc. 
+
+In other words, Naïve Bayes classifiers assume that the effect of a variable value on a given class is independent of the values of other variable. This assumption is called class conditional independence. It is made to simplify the computation and in this sense considered to be “Naïve”.
+
+This assumption is a fairly strong assumption and is often not applicable.  However, bias in estimating probabilities often may not make a difference in practice -- it is the order of the probabilities, not their exact values, that determine the classifications.
+
+Studies comparing classification algorithms have found the Naïve Bayesian classifier to be comparable in performance with classification trees and with neural network classifiers.  They have also exhibited high accuracy and speed when applied to large databases.
+
+The following paragraphs give a more technical description.
+
+Bayes Theorem
+
+Let X be the data record (case) whose class label is unknown. Let H be some hypothesis, such as "data record X belongs to a specified class C." For classification, we want to determine P (H|X) -- the probability that the hypothesis H holds, given the observed data record X.
+
+P (H|X) is the posterior probability of H conditioned on X. For example, the probability that a fruit is an apple, given the condition that it is red and round.  In contrast, P(H) is the prior probability, or apriori probability, of H. In this example P(H) is the probability that any given data record is an apple, regardless of how the data record looks. The posterior probability, P (H|X), is based on more information (such as background knowledge) than the prior probability, P(H), which is independent of X.
+
+Similarly, P (X|H) is posterior probability of X conditioned on H. That is, it is the probability that X is red and round given that we know that it is true that X is an apple. P(X) is the prior probability of X,  i.e., it is the probability that a data record from our set of fruits is red and round. Bayes theorem is useful in that it provides a way of calculating the posterior probability, P(H|X), from P(H), P(X), and P(X|H). Bayes theorem is
+
+P (H|X)  =  P(X|H) P(H) / P(X)

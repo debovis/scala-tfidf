@@ -1,0 +1,227 @@
+<project name="jtmt" default="jar" basedir=".">
+<!-- $Id$ -->
+<!-- $Source$ -->
+  <property file="${user.home}/.m2/maven.properties"/>
+  <property name="maven.build.output" value="target/classes"/>
+  <property name="maven.build.directory" value="target"/>
+  <property name="maven.build.final.name" value="jtmt-1.0-SNAPSHOT"/>
+  <property name="maven.test.reports" value="${maven.build.directory}/test-reports"/>
+  <property name="maven.test.output" value="target/test-classes"/>
+  <property name="lib.dir" value="lib"/>
+  <property name="my.kilim.prefix" value="net.sf.jtmt.concurrent.kilim"/>
+  <property name="my.af.prefix" value="net.sf.jtmt.concurrent.actorfoundry"/>
+  <path id="build.classpath">
+    <fileset dir="${lib.dir}">
+      <include name="activation-1.0.2.jar"/>
+      <include name="activemq-all-5.3.2.jar"/>
+      <include name="actorfoundry-no-kilim-1.0.jar"/>
+      <include name="actorsguildframework-0.5.1-SNAPSHOT.jar"/>
+      <include name="appsforyourdomain-1.0.jar"/>
+      <include name="appsforyourdomain-meta-1.0.jar"/>
+      <include name="arq-2.6.0.jar"/>
+      <include name="asm-1.5.3.jar"/>
+      <include name="asm-all-2.2.3.jar"/>
+      <include name="cassandra-0.7.0-beta2.jar"/>
+      <include name="cglib-2.1_3.jar"/>
+      <include name="classifier4j-0.6.jar"/>
+      <include name="collections15-4.01.jar"/>
+      <include name="commons-beanutils-1.7.0.jar"/>
+      <include name="commons-cli-1.0.jar"/>
+      <include name="commons-codec-1.2.jar"/>
+      <include name="commons-collections-3.1.jar"/>
+      <include name="commons-httpclient-3.0.jar"/>
+      <include name="commons-io-1.2.jar"/>
+      <include name="commons-lang-2.5.jar"/>
+      <include name="commons-logging-1.0.4.jar"/>
+      <include name="commons-math-2.0.jar"/>
+      <include name="dom4j-1.6.1.jar"/>
+      <include name="ezmorph-0.8.1.jar"/>
+      <include name="fj-2.16.jar"/>
+      <include name="gdata-base-1.0.jar"/>
+      <include name="gdata-blogger-2.0.jar"/>
+      <include name="gdata-blogger-meta-2.0.jar"/>
+      <include name="gdata-books-1.0.jar"/>
+      <include name="gdata-books-meta-1.0.jar"/>
+      <include name="gdata-calendar-2.0.jar"/>
+      <include name="gdata-calendar-meta-2.0.jar"/>
+      <include name="gdata-client-1.0.jar"/>
+      <include name="gdata-client-meta-1.0.jar"/>
+      <include name="gdata-codesearch-2.0.jar"/>
+      <include name="gdata-codesearch-meta-2.0.jar"/>
+      <include name="gdata-contacts-2.0.jar"/>
+      <include name="gdata-contacts-meta-2.0.jar"/>
+      <include name="gdata-core-1.0.jar"/>
+      <include name="gdata-docs-2.0.jar"/>
+      <include name="gdata-docs-meta-2.0.jar"/>
+      <include name="gdata-finance-2.0.jar"/>
+      <include name="gdata-finance-meta-2.0.jar"/>
+      <include name="gdata-health-2.0.jar"/>
+      <include name="gdata-health-meta-2.0.jar"/>
+      <include name="gdata-media-1.0.jar"/>
+      <include name="gdata-photos-1.0.jar"/>
+      <include name="gdata-photos-meta-1.0.jar"/>
+      <include name="gdata-spreadsheet-2.0.jar"/>
+      <include name="gdata-spreadsheet-meta-2.0.jar"/>
+      <include name="gdata-webmastertools-2.0.jar"/>
+      <include name="gdata-webmastertools-meta-2.0.jar"/>
+      <include name="gdata-youtube-2.0.jar"/>
+      <include name="gdata-youtube-meta-2.0.jar"/>
+      <include name="geronimo-spec-jaxrpc-1.1-rc4.jar"/>
+      <include name="geronimo-spec-saaj-1.1-rc4.jar"/>
+      <include name="hadoop-0.20.0.jar"/>
+      <include name="icu4j-3_8_1.jar"/>
+      <include name="index-util-0.6.jar"/>
+      <include name="iri-2.6.0.jar"/>
+      <include name="jackson-core-1.2.0.jar"/>
+      <include name="jackson-mapper-1.2.0.jar"/>
+      <include name="jahmm-0.6.1.jar"/>
+      <include name="jaxen-1.1-beta-8.jar"/>
+      <include name="jaxrs-1.2.0.jar"/>
+      <include name="jazzy-0.5.2.jar"/>
+      <include name="jdom-1.0.jar"/>
+      <include name="jena-2.6.0.jar"/>
+      <include name="jetlang-0.1.6.jar"/>
+      <include name="jetty-6.1.5.jar"/>
+      <include name="jetty-util-6.1.5.jar"/>
+      <include name="jgrapht-0.7.3.jar"/>
+      <include name="jline-0.9.94.jar"/>
+      <include name="jpl-5.6.64.jar"/>
+      <include name="jsk-lib-2.1.jar"/>
+      <include name="jsk-platform-2.1.jar"/>
+      <include name="json-lib-0.9.jar"/>
+      <include name="jstl-1.1.2.jar"/>
+      <include name="jta-1.1.jar"/>
+      <include name="junit-4.3.1.jar"/>
+      <include name="jwi-2.1.3.jar"/>
+      <include name="kilim-0.5.jar"/>
+      <include name="lingpipe-3.5.1.jar"/>
+      <include name="log4j-1.2.14.jar"/>
+      <include name="lucene-analyzers-3.0.2.jar"/>
+      <include name="lucene-core-3.0.2.jar"/>
+      <include name="mail-1.4.jar"/>
+      <include name="mysql-connector-java-5.0.5.jar"/>
+      <include name="neo-1.0-b8.jar"/>
+      <include name="nutch-1.0.jar"/>
+      <include name="pellet-jena-2.0.0-rc6.jar"/>
+      <include name="prevayler-2.3.jar"/>
+      <include name="semanticvectors-1.16.jar"/>
+      <include name="servlet-api-2.4.jar"/>
+      <include name="slf4j-api-1.5.0.jar"/>
+      <include name="slf4j-log4j12-1.5.0.jar"/>
+      <include name="solr-common-1.3.0.jar"/>
+      <include name="solr-core-1.3.0.jar"/>
+      <include name="spring-2.0.6.jar"/>
+      <include name="spring-mock-2.0.6.jar"/>
+      <include name="thrift-r959516.jar"/>
+      <include name="websphinx-0.5.jar"/>
+      <include name="xalan-2.7.0.jar"/>
+      <include name="xc-1.2.0.jar"/>
+      <include name="xercesImpl-2.8.0.jar"/>
+      <include name="xml-apis-1.0.b2.jar"/>
+      <include name="xmlParserAPIs-2.6.2.jar"/>
+      <include name="xom-1.1.jar"/>
+      <include name="xpp3-1.1.3.4.0.jar"/>
+      <include name="xstream-1.1.3.jar"/>
+      <include name="apache-cassandra-0.7.0-beta2.jar"/>
+      <include name="libtrift-r959516.jar"/>
+    </fileset>
+  </path>
+  <path id="weave.classpath">
+    <fileset dir="${lib.dir}">
+      <include name="actoryfoundry-1.0.jar"/>
+      <include name="asm-all-2.2.3.jar"/>
+      <include name="kilim-0.5.jar"/>
+    </fileset>
+  </path>
+  <target name="clean" description="Clean the output directory">
+    <delete dir="${maven.build.directory}"/>
+  </target>
+  <target name="compile" description="Compile the code">
+    <mkdir dir="${maven.build.output}"/>
+    <javac destdir="${maven.build.output}" excludes="**/package.html" debug="true" compiler="modern" deprecation="true" optimize="false">
+      <classpath refid="build.classpath"/>
+      <src>
+        <pathelement location="src/main/java"/>
+      </src>
+    </javac>
+    <copy todir="${maven.build.output}">
+      <fileset dir="src/main/resources"/>
+    </copy>
+    <!-- for kilim weaving -->
+    <java classname="kilim.tools.Weaver" fork="yes">
+      <classpath refid="weave.classpath"/>
+      <assertions>
+        <enable/>
+      </assertions>
+      <arg value="-x"/><!-- skip classes that match ExInvalid -->
+      <arg value="ExInvalid|test"/>
+      <arg value="-d"/>
+      <arg value="${maven.build.output}"/>
+      <arg line="${my.kilim.prefix}.ActorManager ${my.kilim.prefix}.Actor ${my.kilim.prefix}.DownloadActor ${my.kilim.prefix}.IndexActor ${my.kilim.prefix}.WriteActor ${my.af.prefix}.ActorManagerExecutor ${my.af.prefix}.DownloadActorExecutor ${my.af.prefix}.IndexActorExecutor ${my.af.prefix}.WriteActorExecutor"/>
+    </java>
+  </target>
+  <target name="jar" depends="compile,compile-tests" description="Clean the JAR">
+    <jar jarfile="${maven.build.directory}/${maven.build.final.name}.jar" basedir="${maven.build.output}" excludes="**/package.html"/>
+  </target>
+  <target name="compile-tests" depends="junit-present, compile" description="Compile the test code" if="junit.present">
+    <mkdir dir="${maven.test.output}"/>
+    <javac destdir="${maven.test.output}" excludes="**/package.html" debug="true" deprecation="true" optimize="false">
+      <src>
+        <pathelement location="src/test/java"/>
+      </src>
+      <classpath>
+        <path refid="build.classpath"/>
+        <pathelement location="${maven.build.output}"/>
+      </classpath>
+    </javac>
+    <copy todir="${maven.test.output}">
+      <fileset dir="src/test/resources"/>
+    </copy>
+  </target>
+  <target name="test" depends="junit-present, compile-tests" if="junit.present" description="Run the test cases">
+    <mkdir dir="${maven.test.reports}"/>
+    <junit printSummary="yes" haltonerror="true" haltonfailure="true" fork="true" dir=".">
+      <sysproperty key="basedir" value="."/>
+      <formatter type="xml"/>
+      <formatter type="plain" usefile="false"/>
+      <classpath>
+        <path refid="build.classpath"/>
+        <pathelement location="${maven.build.output}"/>
+        <pathelement location="${maven.test.output}"/>
+      </classpath>
+      <batchtest todir="${maven.test.reports}">
+        <fileset dir="src/test/java">
+          <include name="**/*Test.java"/>
+          <exclude name="**/*Abstract*Test.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+  <target name="unittest" depends="junit-present, compile-tests" if="junit.present" description="Run single test case">
+    <mkdir dir="${maven.test.reports}"/>
+    <junit printSummary="yes" haltonerror="true" haltonfailure="true" fork="true" dir=".">
+      <sysproperty key="basedir" value="."/>
+      <formatter type="xml"/>
+      <formatter type="plain" usefile="false"/>
+      <classpath>
+        <path refid="build.classpath"/>
+        <pathelement location="${maven.build.output}"/>
+        <pathelement location="${maven.test.output}"/>
+      </classpath>
+      <test name="${test.class}" todir="${maven.build.directory}"/>
+    </junit>
+  </target>
+  <target name="test-junit-present">
+    <available classname="junit.framework.Test" property="junit.present"/>
+  </target>
+  <target name="junit-present" depends="test-junit-present" unless="junit.present">
+    <echo>================================= WARNING ================================</echo>
+    <echo> Junit isn't present in your $ANT_HOME/lib directory. Tests not executed. </echo>
+    <echo>==========================================================================</echo>
+  </target>
+  <target name="test-offline">
+    <condition property="maven.mode.offline">
+      <equals arg1="${build.sysclasspath}" arg2="only"/>
+    </condition>
+  </target>
+</project>
