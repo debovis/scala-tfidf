@@ -26,5 +26,11 @@ libraryDependencies ++= Seq (
 	"ch.qos.logback" % "logback-classic" % "0.9.29",
 	"org.scalatest" %% "scalatest" % "1.6.1" % "test",
 	"org.mockito" % "mockito-all" % "1.9.0" % "test",
-	"org.apache.lucene" % "lucene-core" % "3.5.0"
+	"org.apache.lucene" % "lucene-core" % "3.5.0",
+	"org.apache.commons" % "commons-math3" % "3.0",
+	"net.sourceforge.collections" % "collections-generic" % "4.01",
+	"com.ibm.icu" % "icu4j" % "3.4.4",
+	"commons-io" % "commons-io" % "2.2",
+	"commons-logging" % "commons-logging" % "1.1.1",
+	"edu.mit" % "jwi" % "2.2.2"
 ) 

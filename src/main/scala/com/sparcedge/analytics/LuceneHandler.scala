@@ -6,6 +6,7 @@ import cc.spray.http.{HttpResponse,HttpContent,StatusCodes}
 import cc.spray.http.MediaTypes._
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
+import com.sparcedge.analytics.indexers.matrix.VectorGenerator
 
 class LuceneHandler extends Actor {
 	def receive = {
