@@ -1,8 +1,8 @@
 package net.sf.jtmt.similarity.matrix;
 
 import org.apache.commons.collections15.Transformer;
-import org.apache.commons.math3.linear.OpenMapRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math.linear.OpenMapRealMatrix;
+import org.apache.commons.math.linear.RealMatrix;
 
 /**
  * Specifies the transformation of a Term Document Matrix into a Similarity

@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.math3.linear.OpenMapRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math.linear.OpenMapRealMatrix;
+import org.apache.commons.math.linear.RealMatrix;
 
 /**
  * Implementation of the published version of Google's PageRank algorithm.

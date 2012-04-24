@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.math3.linear.OpenMapRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math.linear.OpenMapRealMatrix;
+import org.apache.commons.math.linear.RealMatrix;
 
 /**
  * Models a search query against the generated term document matrix.

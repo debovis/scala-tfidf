@@ -4,7 +4,10 @@ src_managed/
 project/boot/
 project/project/target
 project/target
+lib/
 .target/
+.history
 .cache
 .project
+.settings/
 .classpath

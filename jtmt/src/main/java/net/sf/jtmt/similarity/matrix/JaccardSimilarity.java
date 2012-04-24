@@ -1,6 +1,6 @@
 package net.sf.jtmt.similarity.matrix;
 
-import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math.linear.RealMatrix;
 
 /**
  * Implements Jaccard Similarity for a term-document matrix.
