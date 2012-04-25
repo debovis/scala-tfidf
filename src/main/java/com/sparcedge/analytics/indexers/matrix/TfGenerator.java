@@ -9,8 +9,6 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.sql.DataSource;
-
 import com.sparcedge.analytics.recognizers.BoundaryRecognizer;
 import com.sparcedge.analytics.recognizers.ContentWordRecognizer;
 import com.sparcedge.analytics.recognizers.IRecognizer;
@@ -32,22 +30,18 @@ import org.apache.commons.math3.linear.RealMatrix;
  * @author Sujit Pal
  * @version $Revision: 21 $
  */
-public class VectorGenerator {
+public class TfGenerator {
 
-  private DataSource dataSource;
-  
-  private Map<Integer,String> wordIdValueMap = new HashMap<Integer,String>();
-  private Map<Integer,String> documentIdNameMap = new HashMap<Integer,String>();
-  private RealMatrix matrix;
 
-  public void setDataSource(DataSource dataSource) {
-    this.dataSource = dataSource;
-  }
-
-  public void generateVector(Map<String,Reader> documents) throws Exception {
-    Map<String,Bag<String>> documentWordFrequencyMap = new HashMap<String,Bag<String>>();
-    SortedSet<String> wordSet = new TreeSet<String>();
-    Integer docId = 0;
+  public static RealMatrix generateMatrix(HashMap<String, String> documents) throws Exception {
+	// create needed variables
+	RealMatrix matrix;
+	Map<Integer,String> 	wordIdValueMap 				= new HashMap<Integer,String>();
+	Map<Integer,String> 	documentIdNameMap 			= new HashMap<Integer,String>();
+    Map<String,Bag<String>> documentWordFrequencyMap 	= new HashMap<String,Bag<String>>();
+    SortedSet<String> 		wordSet 					= new TreeSet<String>();
+    Integer 				docId = 0;
+    
     for (String key : documents.keySet()) {
       String text = getText(documents.get(key));
       Bag<String> wordFrequencies = getWordFrequencies(text);
@@ -76,35 +70,32 @@ public class VectorGenerator {
         matrix.setEntry(i, j, count);
       }
     }
-  }
-
-  public RealMatrix getMatrix() {
     return matrix;
   }
   
-  public String[] getDocumentNames() {
-    String[] documentNames = new String[documentIdNameMap.keySet().size()];
-    for (int i = 0; i < documentNames.length; i++) {
-      documentNames[i] = documentIdNameMap.get(i);
-    }
-    return documentNames;
-  }
-  
-  public String[] getWords() {
-    String[] words = new String[wordIdValueMap.keySet().size()];
-    for (int i = 0; i < words.length; i++) {
-      String word = wordIdValueMap.get(i);
-      if (word.contains("|||")) {
-        // phrases are stored with length for other purposes, strip it off
-        // for this report.
-        word = word.substring(0, word.indexOf("|||"));
-      }
-      words[i] = word;
-    }
-    return words;
-  }
+//  public static String[] getDocumentNames() {
+//    String[] documentNames = new String[documentIdNameMap.keySet().size()];
+//    for (int i = 0; i < documentNames.length; i++) {
+//      documentNames[i] = documentIdNameMap.get(i);
+//    }
+//    return documentNames;
+//  }
+//  
+//  public String[] getWords() {
+//    String[] words = new String[wordIdValueMap.keySet().size()];
+//    for (int i = 0; i < words.length; i++) {
+//      String word = wordIdValueMap.get(i);
+//      if (word.contains("|||")) {
+//        // phrases are stored with length for other purposes, strip it off
+//        // for this report.
+//        word = word.substring(0, word.indexOf("|||"));
+//      }
+//      words[i] = word;
+//    }
+//    return words;
+//  }
 
-  private Bag<String> getWordFrequencies(String text) throws Exception {
+  private static Bag<String> getWordFrequencies(String text) throws Exception {
     Bag<String> wordBag = new HashBag<String>();
     WordTokenizer wordTokenizer = new WordTokenizer();
     wordTokenizer.setText(text);
@@ -132,6 +123,7 @@ public class VectorGenerator {
     return wordBag;
   }
 
+  @SuppressWarnings("unused")
   private String getText(Reader reader) throws Exception {
     StringBuilder textBuilder = new StringBuilder();
     char[] cbuf = new char[1024];
@@ -142,4 +134,10 @@ public class VectorGenerator {
     reader.close();
     return textBuilder.toString();
   }
+  
+  private static String getText(String text) throws Exception {
+	  if(text == null || text.length() ==0){
+		  throw new Exception("document was invalid");
+	  } else return text;
+	  }
 }

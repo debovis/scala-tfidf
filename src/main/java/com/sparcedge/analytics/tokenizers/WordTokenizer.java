@@ -47,8 +47,7 @@ public class WordTokenizer {
 
   public WordTokenizer(String rulesfile) throws Exception {
     super();
-    this.breakIterator = new RuleBasedBreakIterator(
-      FileUtils.readFileToString(new File(rulesfile), "UTF-8"));
+    this.breakIterator = new RuleBasedBreakIterator(FileUtils.readFileToString(new File(rulesfile), "UTF-8"));
   }
   
   public void setText(String text) {

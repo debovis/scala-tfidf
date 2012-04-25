@@ -43,7 +43,7 @@ public class IdfIndexer implements Transformer<RealMatrix,RealMatrix> {
     return matrix;
   }
 
-  private double sum(RealMatrix colMatrix) {
+  private static double sum(RealMatrix colMatrix) {
     double sum = 0.0D;
     for (int i = 0; i < colMatrix.getRowDimension(); i++) {
       sum += colMatrix.getEntry(i, 0);
@@ -51,7 +51,7 @@ public class IdfIndexer implements Transformer<RealMatrix,RealMatrix> {
     return sum;
   }
 
-  private double countDocsWithWord(RealMatrix rowMatrix) {
+  private static double countDocsWithWord(RealMatrix rowMatrix) {
     double numDocs = 0.0D;
     for (int j = 0; j < rowMatrix.getColumnDimension(); j++) {
       if (rowMatrix.getEntry(0, j) > 0.0D) {

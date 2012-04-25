@@ -27,7 +27,7 @@ public class ContentWordRecognizer implements IRecognizer {
     POS.NOUN, POS.VERB, POS.ADJECTIVE, POS.ADVERB});
   
   public void init() throws Exception {
-    this.dictionary = new Dictionary(new URL("file", null, "/opt/wordnet-3.0/dict"));
+    this.dictionary = new Dictionary(new URL("file", null, "/usr/local/WordNet-3.0/dict/"));
     dictionary.open();
   }
 
