@@ -42,14 +42,14 @@ trait AnalyticsService extends Directives {
 						)))
       		}
     	}~
-    	path("lucene") { 
+    	path("similarity") { 
 			post { ctx: RequestContext =>
 			  val data = ctx.request.content.as[String].right.get toString
 			  
 			  try{
 			    val requestData = Some(parse(data))
-			    val LuceneActor = Actor.actorOf[LuceneHandler].start
-				LuceneActor ! LuceneRequest(requestData, ctx)
+			    val SimActor = Actor.actorOf[SimilarityHandler].start
+				SimActor ! similarityRequest(requestData, ctx)
 				
 				
 			  }

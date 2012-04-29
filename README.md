@@ -42,3 +42,12 @@ Package (Create Jar)
 Run Server
 
 	$ java -jar <generated jar>
+
+Similarity API
+
+	data format:
+		- {"data": 
+			{"data_set": [{"title":"doc1", "value":""},	{"title":"doc3", "value":""}],
+			"comparison_document": [{"title":"doc2", "value":""}]
+			}
+		  }'
