@@ -5,6 +5,7 @@ project/boot/
 project/project/target
 project/target
 lib/
+temp/
 .target/
 .history
 .cache
