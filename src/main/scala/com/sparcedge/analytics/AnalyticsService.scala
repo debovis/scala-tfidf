@@ -43,7 +43,7 @@ trait AnalyticsService extends Directives {
       		}
     	}~
     	path("similarity") { 
-			post { ctx: RequestContext =>
+			post { jsonpWithParameter("callback") { ctx: RequestContext =>
 			  val data = ctx.request.content.as[String].right.get toString
 			  
 			  try{
@@ -62,8 +62,30 @@ trait AnalyticsService extends Directives {
 									`application/json`,
 									compact(render("error" -> "Problem parsing dataset")) )
 						))
-			  }
+			  }}
 			}
+		}~
+		path("cartigram") {
+		  get { jsonpWithParameter("callback") { ctx: RequestContext =>
+		    val query = ctx.request.queryParams
+		  
+		    try{
+		      val cartActor = Actor.actorOf[CartigramHandler].start
+		      cartActor ! cartRequest(query,ctx)
+		    }
+		    catch{
+		      case e:Exception => 
+
+		        ctx.complete(
+		        HttpResponse (
+							status = StatusCodes.BadRequest,
+							headers = Nil,
+							content = HttpContent(
+									`application/json`,
+									compact(render("error" -> "Having a bad day?")) )
+						))
+		    }}
+		  }
 		}
 	}	
 }

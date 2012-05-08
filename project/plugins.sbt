@@ -13,10 +13,6 @@ resolvers += "gilbertw1-scct-plugin" at "https://raw.github.com/gilbertw1/sbt-sc
 
 addSbtPlugin("ch.craven" %% "scct-plugin" % "0.2.1")
 
-resolvers += "spray repo" at "http://repo.spray.cc"
-
-addSbtPlugin("cc.spray" % "sbt-twirl" % "0.5.2")
-
 resolvers += "sbt-idea-repo" at "http://mpeltonen.github.com/maven/"
 
 addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.0.0")

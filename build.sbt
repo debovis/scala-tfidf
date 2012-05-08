@@ -14,12 +14,13 @@ seq(com.github.retronym.SbtOneJar.oneJarSettings: _*)
 
 seq(ScctPlugin.scctSettings: _*)
 
-seq(Twirl.settings: _*)
 
 libraryDependencies ++= Seq (
 	"cc.spray" % "spray-server" % "0.9.0" % "compile",
 	"cc.spray" %  "spray-can" % "0.9.3" % "compile",
 	"net.liftweb" %% "lift-json" % "2.4-M4",
+	"net.databinder" %% "dispatch-http" % "0.8.7",
+	"com.mongodb.casbah" % "casbah_2.9.0-1" % "2.1.5.0",
 	"se.scalablesolutions.akka" % "akka-actor" % "1.3.1",
 	"se.scalablesolutions.akka" % "akka-slf4j" % "1.3.1",
 	"org.slf4j" % "slf4j-api" % "1.6.1",
@@ -32,5 +33,7 @@ libraryDependencies ++= Seq (
 	"com.ibm.icu" % "icu4j" % "3.8",
 	"commons-io" % "commons-io" % "2.2",
 	"commons-logging" % "commons-logging" % "1.1.1",
-	"edu.mit" % "jwi" % "2.2.2"
+	"edu.mit" % "jwi" % "2.2.2",
+	"joda-time" % "joda-time" % "2.1",
+	"org.joda" % "joda-convert" % "1.2"
 ) 

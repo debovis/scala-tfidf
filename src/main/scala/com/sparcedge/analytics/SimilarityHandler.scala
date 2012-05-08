@@ -15,6 +15,7 @@ import com.sparcedge.analytics.indexers.matrix.TfGenerator
 import com.sparcedge.analytics.indexers.matrix.IdfIndexer
 import com.sparcedge.analytics.similarity.matrix.CosineSimilarity
 
+
 class SimilarityHandler extends Actor {
 	implicit val formats = Serialization.formats(NoTypeHints)
   
@@ -33,11 +34,10 @@ class SimilarityHandler extends Actor {
 			  (requestData.get \ "data" \ "data_set").extract[List[dataSet]].foreach(d => documents.put(d.title, d.value) )
 			  
 			  // Comparision document
-			  (requestData.get \ "data" \ "comparison_document").extract[List[dataSet]].foreach{d => 
-			    	comparisonDocumentTitle = d.title
-			    	documents.put(d.title, d.value)
-			    	comparisonDocument.put(d.title, d.value)
-			    }
+			  val comp = (requestData.get \ "data" \ "comparison_document").extract[dataSet] 
+			  comparisonDocumentTitle = comp.title
+			  documents.put(comp.title, comp.value)
+			  comparisonDocument.put(comp.title, comp.value)
 			  
 			  // Generate TF matrix, IDF it, and how similar it is?
 			  val res:RealMatrix = TfGenerator.generateMatrix(documents)
@@ -85,16 +85,4 @@ class similarityResult(
 )
 
 case class similarityRequest(requestData:Some[net.liftweb.json.JsonAST.JValue], ctx: RequestContext)
-
-
-// {"data":{"data_set":[{"title":"doc1","value":"once upon a time"},{"title":"doc2","value":"true life"}]}}
-
-//{'data':
-//		{'data_set': [
-//				{'key1': 'string1' },
-//				{'key2': 'string2' }
-//			]
-//		},
-//		{'comparision': 'string'}
-//	}
 

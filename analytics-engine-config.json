@@ -1,0 +1,9 @@
+{"analytics-engine": {
+        "server": {
+            "host": "mongo-node1.dev.sparcloud.net",
+            "port": 27017
+        },
+        "database": "sparc-platform-dev",
+        "collection": "point-data-warehouse"
+    }
+}
