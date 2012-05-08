@@ -33,6 +33,7 @@ libraryDependencies ++= Seq (
 	"com.ibm.icu" % "icu4j" % "3.8",
 	"commons-io" % "commons-io" % "2.2",
 	"commons-logging" % "commons-logging" % "1.1.1",
+	"commons-lang" % "commons-lang" % "2.3",
 	"edu.mit" % "jwi" % "2.2.2",
 	"joda-time" % "joda-time" % "2.1",
 	"org.joda" % "joda-convert" % "1.2"
