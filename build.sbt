@@ -14,8 +14,6 @@ seq(com.github.retronym.SbtOneJar.oneJarSettings: _*)
 
 seq(ScctPlugin.scctSettings: _*)
 
-seq(Twirl.settings: _*)
-
 libraryDependencies ++= Seq (
 	"cc.spray" % "spray-server" % "0.9.0" % "compile",
 	"cc.spray" %  "spray-can" % "0.9.3" % "compile",
