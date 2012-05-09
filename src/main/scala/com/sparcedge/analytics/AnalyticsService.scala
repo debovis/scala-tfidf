@@ -54,7 +54,10 @@ trait AnalyticsService extends Directives {
 				
 			  }
 			  catch{
-			    case e:net.liftweb.json.JsonParser.ParseException => ctx.complete(
+			    case e:net.liftweb.json.JsonParser.ParseException => 
+			      println(e)
+			      
+			      ctx.complete(
 			    		HttpResponse (
 							status = StatusCodes.BadRequest,
 							headers = Nil,

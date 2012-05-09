@@ -56,7 +56,9 @@ class SimilarityHandler extends Actor {
 			  val howSimilar = cosineSim.similarity(idfSubMatrix,comparisonVect).toArray().toList
 			  // zip lists to return
 			  keys.zip(howSimilar).foreach{x => 
-			    simList = new similarityResult(x._1.toString(), x._2.toDouble) :: simList
+			    if(x._2.toDouble >0){
+			    	simList = new similarityResult(x._1.toString(), x._2.toDouble) :: simList
+			    }
 			  }
 			  
 				ctx.complete(

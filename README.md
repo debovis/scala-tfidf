@@ -13,6 +13,7 @@ Prerequisites
 Getting Started
 ------------
 
+
 Download Project References
 	
 	$ sbt update
@@ -28,6 +29,7 @@ Compile
 Test
 	
 	$ sbt test
+	$ ./install_wordnet.sh - to run test cases and similarity API
 
 Generate Test Coverage Report
 
