@@ -68,3 +68,9 @@ Similarity API
 				"comparison_document": {"title":"doc2", "value":"Rick was an enthusiastic and creative team member leading SPARC520 to the Buy a Beam Victory! "}
 				}
 			}' http://localhost:8080/similarity
+
+
+	To test out some sparcIN similarity:
+		$ python src/test/python/testSim.py 
+
+
