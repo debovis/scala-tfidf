@@ -45,7 +45,8 @@ class testSimilarity():
 		return [questions[q] for q in questions if category in questions[q]['category']]
 
 	def querySimilarity(self,data):
-		newData = simplejson.dumps({'data':data})
+		newData = simplejson.dumps({'data':data}, sort_keys=True, indent=4 * ' ')
+		print '\n'.join([l.rstrip() for l in  newData.splitlines()])
 		request = urllib2.Request(self.uri,newData,self.headers)
 		try:
 			f = urllib2.urlopen(request)
@@ -74,35 +75,7 @@ if __name__ == '__main__':
 
 	del data['data_set'][-1]
 
-	sim = ts.querySimilarity(data)
-
-	print sim
+	print ts.querySimilarity(data)
 
 
 #curl -d '{"data": {"data_set": [{"value": "What file should you edit to change  the  runlevel for your system?", "title": "doc0"}, {"value": "How do you check the current runlevel on a linux machine?", "title": "doc1"}, {"value": " What command is used for querying settings of an ethernet device and changing them.", "title": "doc2"}, {"value": "What  command displays the status of the cluster ", "title": "doc3"}, {"value": "How do you create a new ext4 filesystem?", "title": "doc4"}, {"value": "What Linux component provides firewalling?", "title": "doc5"}, {"value": "What is a typical Web server used on a Linux server?", "title": "doc6"}, {"value": "How do you display a volume group?", "title": "doc7"}, {"value": "If you were to create a new file system and wanted it to mount after a reboot, what file would need to be edited?", "title": "doc8"}, {"value": "What does the ethtool <interface name> command do?", "title": "doc9"}, {"value": "How would you check to see if a network interface had a link active?", "title": "doc10"}, {"value": "What command would you use to change run levels?", "title": "doc11"}, {"value": "How would you check to see if iptables would start at boot up?", "title": "doc12"}, {"value": "How would you install a kernel in Redhat without using yum?", "title": "doc13"}, {"value": "What command would you run to find out what package provides a certain file or binary? ", "title": "doc14"}, {"value": "How can you configure your server to boot into run level 3 upon every boot?", "title": "doc15"}, {"value": "How can you tell what services are configured to start at boot?", "title": "doc16"}], "comparison_document": {"value": "Whats the simplest way to list the processes on a system?", "title": "doc17"}}}' http://localhost:8080/similarity
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
