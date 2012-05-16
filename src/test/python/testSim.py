@@ -35,7 +35,7 @@ class testSimilarity():
 		return questions
 	
 	def getCategories(self):
-		d = [questions[q]['category'] for q in self.questions]
+		d = [self.questions[q]['category'] for q in self.questions.keys()]
 		s = Set()
 		for listItem in d:
 			for item in listItem:
@@ -43,7 +43,7 @@ class testSimilarity():
 		return s
 	
 	def getQuestionsInCategory(self,category):
-		return [questions[q] for q in questions if category in questions[q]['category']]
+		return [self.questions[q] for q in self.questions if category in self.questions[q]['category']]
 
 	def querySimilarity(self,data):
 		newData = simplejson.dumps({'data':data})
@@ -64,24 +64,36 @@ if __name__ == '__main__':
 	questions = ts.questions
 	data = ts.dataObj()
 
-	# while True:
-	# 	categories = ts.getCategories()
-	# 	category = random.choice(categories)
-	# 	questions = ts.getQuestionsInCategory(category)
+	def getQs():
+		categories = ts.getCategories()
+		category = random.choice(list(categories))
+		return {'qs' : ts.getQuestionsInCategory(category), 'category' :category}
 
-	qs = ts.getQuestionsInCategory('Software Development')
+	while 1:
+		qs = getQs()
+		questions = qs['qs']
+		category = qs['category']
+		if len(questions)<5:
+			continue
+		else: 
+			break
+
+	#qs = ts.getQuestionsInCategory('Software Development')
 	#cd = ts.getQuestionsInCategory('jquery')
 	
 	i=0
-	for item in qs:
+	for item in questions:
 		data['data_set'].append({'title':str('doc{0}'.format(i)), 'value': item['question']})
 		i = i+1
 	
+	# Lets take a random question from sample to compare
+	randomQuestion = random.randint(0,len(questions))
 	data['comparison_document']['title'] = 'compDoc'
-	data['comparison_document']['value'] = qs[-10]['question']
+	data['comparison_document']['value'] = questions[randomQuestion]['question']
 
-	del data['data_set'][-10]
+	del data['data_set'][randomQuestion]
 
+	print 'category chosen is: {0}'.format(category)
 	print ts.querySimilarity(data)
 
 
