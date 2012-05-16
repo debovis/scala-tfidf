@@ -4,6 +4,7 @@ import cc.spray._
 import cc.spray.http._
 import cc.spray.http.MediaTypes._
 import cc.spray.http.HttpHeaders.{`Cache-Control`, `Connection`}
+import cc.spray.http.{HttpResponse,HttpContent,StatusCodes,HttpHeader}
 import cc.spray.http.CacheDirectives.`no-cache`
 import cc.spray.directives.{IntNumber,Remaining}
 import akka.actor.{PoisonPill, Actor, Scheduler, ActorRef}
@@ -35,7 +36,7 @@ trait AnalyticsService extends Directives {
       			ctx.complete(
 	      			HttpResponse (
 						status = StatusCodes.OK,
-						headers = Nil,
+						headers = List(HttpHeader("Connection", "Keep-Alive")),
 						content = HttpContent(
 								`application/json`,
 								compact(render("headers" -> content.as[String].right.getOrElse(headers("user-agent"))) )

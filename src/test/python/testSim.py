@@ -1,5 +1,5 @@
 from xlrd import cellname,open_workbook as ow
-import simplejson
+import simplejson,random
 from sets import Set
 import urllib2,urllib
 
@@ -7,7 +7,8 @@ class testSimilarity():
 
 	def __init__(self):
 		self.file_location = 'src/main/resources/questions.xls'
-		self.host = 'http://localhost'
+		#self.host = 'http://localhost'
+		self.host = 'http://analytics.sparcloud.net'
 		self.port = '8080'
 		self.simAddress = 'similarity'
 		self.uri = '{0}:{1}/{2}'.format(self.host,self.port,self.simAddress)
@@ -45,8 +46,10 @@ class testSimilarity():
 		return [questions[q] for q in questions if category in questions[q]['category']]
 
 	def querySimilarity(self,data):
-		newData = simplejson.dumps({'data':data}, sort_keys=True, indent=4 * ' ')
-		print '\n'.join([l.rstrip() for l in  newData.splitlines()])
+		newData = simplejson.dumps({'data':data})
+		prettyJson = simplejson.dumps({'data':data}, sort_keys=True, indent=4 * ' ')
+		#print newData
+		print '\n'.join([l.rstrip() for l in  prettyJson.splitlines()])
 		request = urllib2.Request(self.uri,newData,self.headers)
 		try:
 			f = urllib2.urlopen(request)
@@ -54,15 +57,19 @@ class testSimilarity():
 			f.close()
 			return sim
 		except Exception:
-			return 'fail'
-
+			return 'fail, make sure client is running currently accessing {0}'.format(self.uri)
 
 if __name__ == '__main__':
 	ts = testSimilarity()
 	questions = ts.questions
 	data = ts.dataObj()
 
-	qs = ts.getQuestionsInCategory('Linux')
+	# while True:
+	# 	categories = ts.getCategories()
+	# 	category = random.choice(categories)
+	# 	questions = ts.getQuestionsInCategory(category)
+
+	qs = ts.getQuestionsInCategory('Software Development')
 	#cd = ts.getQuestionsInCategory('jquery')
 	
 	i=0
@@ -71,9 +78,9 @@ if __name__ == '__main__':
 		i = i+1
 	
 	data['comparison_document']['title'] = 'compDoc'
-	data['comparison_document']['value'] = qs[-1]['question']
+	data['comparison_document']['value'] = qs[-10]['question']
 
-	del data['data_set'][-1]
+	del data['data_set'][-10]
 
 	print ts.querySimilarity(data)
 

@@ -2,7 +2,7 @@ package com.sparcedge.analytics
 
 import akka.actor.Actor
 import cc.spray.RequestContext
-import cc.spray.http.{HttpResponse,HttpContent,StatusCodes}
+import cc.spray.http.{HttpResponse,HttpContent,StatusCodes,HttpHeader}
 import cc.spray.http.MediaTypes._
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
@@ -46,7 +46,7 @@ class SimilarityHandler extends Actor {
 			  var idfSubMatrix = idfRes.getSubMatrix(0,idfRes.getRowDimension()-1, 0, idfRes.getColumnDimension()-2);
 			  
 			  // Debug
-			 // System.out.println("before: " + idfRes.toString() + "\n after: " + idfSubMatrix.toString() + "\n comparison vect " + comparisonVect.toString());
+			  //System.out.println("before: " + idfRes.toString() + "\n after: " + idfSubMatrix.toString() + "\n comparison vect " + comparisonVect.toString());
 			 
 			  // remove comparision document from document hashmap, needed to to be in set for IDF and TFGeneration
 			  comparisonDocument.remove(comparisonDocumentTitle)
@@ -64,7 +64,7 @@ class SimilarityHandler extends Actor {
 				ctx.complete(
 					HttpResponse (
 						status = StatusCodes.OK,
-						headers = Nil,
+						headers = List(HttpHeader("Connection", "Keep-Alive")),
 						content = HttpContent(
 								`application/json`,
 								compact(render("similarity" -> simList.map {w => ("title" -> w.title) ~ ("similarity" -> w.similarity)}))
