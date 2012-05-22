@@ -33,111 +33,131 @@ import org.apache.commons.math3.linear.RealMatrix;
 public class TfGenerator {
 
 
-  public static RealMatrix generateMatrix(HashMap<String, String> documents) throws Exception {
-	// create needed variables
-	RealMatrix matrix;
-	Map<Integer,String> 	wordIdValueMap 				= new HashMap<Integer,String>();
-	Map<Integer,String> 	documentIdNameMap 			= new HashMap<Integer,String>();
-    Map<String,Bag<String>> documentWordFrequencyMap 	= new HashMap<String,Bag<String>>();
-    SortedSet<String> 		wordSet 					= new TreeSet<String>();
-    Integer 				docId = 0;
-    
-    for (String key : documents.keySet()) {
-      String text = getText(documents.get(key));
-      Bag<String> wordFrequencies = getWordFrequencies(text);
-      wordSet.addAll(wordFrequencies.uniqueSet());
-      documentWordFrequencyMap.put(key, wordFrequencies);
-      documentIdNameMap.put(docId, key);
-      docId++;
-    }
-    // create a Map of ids to words from the wordSet
-    int wordId = 0;
-    for (String word : wordSet) {
-      wordIdValueMap.put(wordId, word);
-      wordId++;
-    }
-    // we need a documents.keySet().size() x wordSet.size() matrix to hold
-    // this info
-    int numDocs = documents.keySet().size();
-    int numWords = wordSet.size();
-    matrix = new OpenMapRealMatrix(numWords, numDocs);
-    for (int i = 0; i < matrix.getRowDimension(); i++) {
-      for (int j = 0; j < matrix.getColumnDimension(); j++) {
-        String docName = documentIdNameMap.get(j);
-        Bag<String> wordFrequencies = documentWordFrequencyMap.get(docName);
-        String word = wordIdValueMap.get(i);
-        int count = wordFrequencies.getCount(word);
-        matrix.setEntry(i, j, count);
-      }
-    }
-    return matrix;
-  }
-  
-//  public static String[] getDocumentNames() {
-//    String[] documentNames = new String[documentIdNameMap.keySet().size()];
-//    for (int i = 0; i < documentNames.length; i++) {
-//      documentNames[i] = documentIdNameMap.get(i);
-//    }
-//    return documentNames;
-//  }
-//  
-//  public String[] getWords() {
-//    String[] words = new String[wordIdValueMap.keySet().size()];
-//    for (int i = 0; i < words.length; i++) {
-//      String word = wordIdValueMap.get(i);
-//      if (word.contains("|||")) {
-//        // phrases are stored with length for other purposes, strip it off
-//        // for this report.
-//        word = word.substring(0, word.indexOf("|||"));
-//      }
-//      words[i] = word;
-//    }
-//    return words;
-//  }
+	public static RealMatrix generateMatrix(HashMap<String, String> documents) throws Exception {
+		// create needed variables
+		RealMatrix matrix;
+		Map<Integer,String> 	wordIdValueMap 				= new HashMap<Integer,String>();
+		Map<Integer,String> 	documentIdNameMap 			= new HashMap<Integer,String>();
+		Map<String,Bag<String>> documentWordFrequencyMap 	= new HashMap<String,Bag<String>>();
+		SortedSet<String> 		wordSet 					= new TreeSet<String>();
+		Integer 				docId = 0;
 
-  private static Bag<String> getWordFrequencies(String text) throws Exception {
-    Bag<String> wordBag = new HashBag<String>();
-    WordTokenizer wordTokenizer = new WordTokenizer();
-    wordTokenizer.setText(text);
-    List<Token> tokens = new ArrayList<Token>();
-    Token token = null;
-    while ((token = wordTokenizer.nextToken()) != null) {
-      tokens.add(token);
-    }
-    RecognizerChain recognizerChain = new RecognizerChain(
-        Arrays.asList(new IRecognizer[] {
-        new BoundaryRecognizer(),
-        new StopwordRecognizer(),
-        new ContentWordRecognizer()
-    }));
-//  new AbbreviationRecognizer(dataSource),
-//  new PhraseRecognizer(dataSource),
-    recognizerChain.init();
-    List<Token> recognizedTokens = recognizerChain.recognize(tokens);
-    for (Token recognizedToken : recognizedTokens) {
-      if (recognizedToken.getType() == TokenType.ABBREVIATION ||  recognizedToken.getType() == TokenType.PHRASE ||  recognizedToken.getType() == TokenType.CONTENT_WORD) {
-        // lowercase words to treat Human and human as the same word
-        wordBag.add(StringUtils.lowerCase(recognizedToken.getValue()));
-      }
-    }
-    return wordBag;
-  }
+		for (String key : documents.keySet()) {
+			String text = getText(documents.get(key));
+			Bag<String> wordFrequencies = getWordFrequencies(text);
+			wordSet.addAll(wordFrequencies.uniqueSet());
+			documentWordFrequencyMap.put(key, wordFrequencies);
+			documentIdNameMap.put(docId, key);
+			docId++;
+		}
+		// create a Map of ids to words from the wordSet
+		int wordId = 0;
+		for (String word : wordSet) {
+			wordIdValueMap.put(wordId, word);
+			wordId++;
+		}
+		// we need a documents.keySet().size() x wordSet.size() matrix to hold
+		// this info
+		int numDocs = documents.keySet().size();
+		int numWords = wordSet.size();
+		matrix = new OpenMapRealMatrix(numWords, numDocs);
+		for (int i = 0; i < matrix.getRowDimension(); i++) {
+			for (int j = 0; j < matrix.getColumnDimension(); j++) {
+				String docName = documentIdNameMap.get(j);
+				Bag<String> wordFrequencies = documentWordFrequencyMap.get(docName);
+				String word = wordIdValueMap.get(i);
+				int count = wordFrequencies.getCount(word);
+				matrix.setEntry(i, j, count);
+			}
+		}
+		return matrix;
+	}
 
-  @SuppressWarnings("unused")
-  private String getText(Reader reader) throws Exception {
-    StringBuilder textBuilder = new StringBuilder();
-    char[] cbuf = new char[1024];
-    int len = 0;
-    while ((len = reader.read(cbuf, 0, 1024)) != -1) {
-      textBuilder.append(ArrayUtils.subarray(cbuf, 0, len));
-    }
-    reader.close();
-    return textBuilder.toString();
-  }
-  
-  private static String getText(String text) throws Exception {
-	  if(text == null || text.length() ==0){
-		  throw new Exception("document was invalid");
-	  } else return text;
-	  }
+
+	private static Bag<String> getWordFrequencies(String text) throws Exception {
+		Bag<String> wordBag = new HashBag<String>();
+		WordTokenizer wordTokenizer = new WordTokenizer();
+		wordTokenizer.setText(text);
+		List<Token> tokens = new ArrayList<Token>();
+		Token token = null;
+		while ((token = wordTokenizer.nextToken()) != null) {
+			tokens.add(token);
+		}
+		RecognizerChain recognizerChain = new RecognizerChain(
+				Arrays.asList(new IRecognizer[] {
+						new BoundaryRecognizer(),
+						new StopwordRecognizer(),
+						new ContentWordRecognizer()
+				}));
+		//  new AbbreviationRecognizer(dataSource),
+		//  new PhraseRecognizer(dataSource),
+		recognizerChain.init();
+		List<Token> recognizedTokens = recognizerChain.recognize(tokens);
+		for (Token recognizedToken : recognizedTokens) {
+			//    	ABBREVIATION, 
+			//    	  COMBINED, 
+			//    	  PHRASE, 
+			//    	  EMOTICON, 
+			//    	  INTERNET, 
+			//    	  WORD,
+			//    	  STOP_WORD,
+			//    	  CONTENT_WORD,
+			//    	  NUMBER, 
+			//    	  WHITESPACE,
+			//    	  PUNCTUATION, 
+			//    	  PLACE, 
+			//    	  ORGANIZATION,
+			//    	  MARKUP, 
+			//    	  UNKNOWN
+
+			if (	recognizedToken.getType() == TokenType.ABBREVIATION ||  
+					recognizedToken.getType() == TokenType.PHRASE ||  
+					recognizedToken.getType() == TokenType.CONTENT_WORD ||
+					recognizedToken.getType() == TokenType.INTERNET) {
+				// lowercase words to treat Human and human as the same word
+				wordBag.add(StringUtils.lowerCase(recognizedToken.getValue()));
+			}
+		}
+		return wordBag;
+	}
+
+	@SuppressWarnings("unused")
+	private String getText(Reader reader) throws Exception {
+		StringBuilder textBuilder = new StringBuilder();
+		char[] cbuf = new char[1024];
+		int len = 0;
+		while ((len = reader.read(cbuf, 0, 1024)) != -1) {
+			textBuilder.append(ArrayUtils.subarray(cbuf, 0, len));
+		}
+		reader.close();
+		return textBuilder.toString();
+	}
+
+	private static String getText(String text) throws Exception {
+		if(text == null || text.length() ==0){
+			throw new Exception("document was invalid");
+		} else return text;
+	}
 }
+
+//public static String[] getDocumentNames() {
+//String[] documentNames = new String[documentIdNameMap.keySet().size()];
+//for (int i = 0; i < documentNames.length; i++) {
+//documentNames[i] = documentIdNameMap.get(i);
+//}
+//return documentNames;
+//}
+//
+//public String[] getWords() {
+//String[] words = new String[wordIdValueMap.keySet().size()];
+//for (int i = 0; i < words.length; i++) {
+//String word = wordIdValueMap.get(i);
+//if (word.contains("|||")) {
+//  // phrases are stored with length for other purposes, strip it off
+//  // for this report.
+//  word = word.substring(0, word.indexOf("|||"));
+//}
+//words[i] = word;
+//}
+//return words;
+//}

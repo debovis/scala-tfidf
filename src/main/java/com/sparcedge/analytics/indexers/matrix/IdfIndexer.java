@@ -24,6 +24,7 @@ public class IdfIndexer implements Transformer<RealMatrix,RealMatrix> {
       for (int i = 0; i < matrix.getRowDimension(); i++) {
         double matrixElement = matrix.getEntry(i, j);
         if (matrixElement > 0.0D) {
+        	// get number of documents that contain this word
           double dm = countDocsWithWord( matrix.getSubMatrix(i, i, 0, matrix.getColumnDimension() - 1));
           matrix.setEntry(i, j, matrix.getEntry(i,j) * (1 + Math.log(n) - Math.log(dm)));
         }

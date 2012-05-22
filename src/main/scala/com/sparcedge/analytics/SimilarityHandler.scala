@@ -54,12 +54,15 @@ class SimilarityHandler extends Actor {
 			  
 			  val keys = documents.keySet().toArray().toList
 			  val howSimilar = cosineSim.similarity(idfSubMatrix,comparisonVect).toArray().toList
+			  
 			  // zip lists to return
 			  keys.zip(howSimilar).foreach{x => 
 			    if(x._2.toDouble >0){
 			    	simList = new similarityResult(x._1.toString(), x._2.toDouble) :: simList
 			    }
 			  }
+			  // Sort it
+			  simList = simList.sortWith(_.similarity > _.similarity)
 			  
 				ctx.complete(
 					HttpResponse (
@@ -70,7 +73,16 @@ class SimilarityHandler extends Actor {
 								compact(render("similarity" -> simList.map {w => ("title" -> w.title) ~ ("similarity" -> w.similarity)}))
 						)))
 		  } catch {
-		    		case e:Exception => println(e.toString())
+		    		case e:Exception => 
+		    		  	println(e.toString())
+		    		  	ctx.complete(
+							HttpResponse (
+								status = StatusCodes.OK,
+								headers = Nil,
+								content = HttpContent(
+										`application/json`,
+										compact(render("similarity" -> e.toString()))
+						)))
 		  }
 		case _ =>
 	}
