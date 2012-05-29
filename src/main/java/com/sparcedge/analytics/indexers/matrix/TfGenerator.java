@@ -112,7 +112,7 @@ public class TfGenerator {
 
 			if (	recognizedToken.getType() == TokenType.ABBREVIATION ||  
 					recognizedToken.getType() == TokenType.PHRASE ||  
-					recognizedToken.getType() == TokenType.CONTENT_WORD ||
+					recognizedToken.getType() == TokenType.WORD ||
 					recognizedToken.getType() == TokenType.INTERNET) {
 				// lowercase words to treat Human and human as the same word
 				wordBag.add(StringUtils.lowerCase(recognizedToken.getValue()));

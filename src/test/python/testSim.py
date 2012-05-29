@@ -55,11 +55,11 @@ class testSimilarity():
 		request = urllib2.Request(self.uri,newData,self.headers)
 		try:
 			f = urllib2.urlopen(request)
-			sim = simplejson.dumps(f.read(), sort_keys=True, indent=4 * ' ')
+			sim = f.read()
 			f.close()
 			return sim
 		except Exception:
-			return 'fail, make sure client is running currently accessing {0}'.format(self.uri)
+			return 'fail, please make sure client is running. currently accessing {0}'.format(self.uri)
 
 	def randomQuestionSet(self):
 		questions = self.questions
@@ -100,6 +100,8 @@ if __name__ == '__main__':
 		ts = testSimilarity(args[1])
 	else: 
 		ts = testSimilarity()
-	print '\n'.join([l.rstrip() for l in ts.randomQuestionSet().splitlines()])
+	simDict = simplejson.loads(ts.randomQuestionSet())
+	sim = simplejson.dumps(simDict, sort_keys=True, indent=4 * ' ')
+	print '\n'.join([l.rstrip() for l in sim.splitlines()])
 	
 	

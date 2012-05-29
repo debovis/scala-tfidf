@@ -10,7 +10,9 @@ import com.sparcedge.analytics.tokenizers.TokenType;
 import edu.mit.jwi.Dictionary;
 import edu.mit.jwi.IDictionary;
 import edu.mit.jwi.item.IIndexWord;
+import edu.mit.jwi.item.IWordID;
 import edu.mit.jwi.item.POS;
+import edu.mit.jwi.morph.WordnetStemmer;
 
 /**
  * Recognizes content words (noun, verb, adjective, and adverb) from a
@@ -23,26 +25,39 @@ import edu.mit.jwi.item.POS;
 public class ContentWordRecognizer implements IRecognizer {
 
   private IDictionary dictionary;
+  private WordnetStemmer stemmer;
   private List<POS> allowablePartsOfSpeech = Arrays.asList(new POS[] {
     POS.NOUN, POS.VERB, POS.ADJECTIVE, POS.ADVERB});
   
   public void init() throws Exception {
     this.dictionary = new Dictionary(new URL("file", null, "./temp/WordNet-3.0/dict/"));
     dictionary.open();
+    this.stemmer = new WordnetStemmer(this.dictionary);
   }
 
   public List<Token> recognize(List<Token> tokens) {
     List<Token> outputTokens = new ArrayList<Token>();
     for (Token token : tokens) {
       Token outputToken = new Token(token.getValue(), token.getType());
+     
+      // Filter for only tokentype word
       if (token.getType() == TokenType.WORD) {
         String word = token.getValue();
+        
+        // TODO: Change indexWord to stemmed word if available, and use .WORD instead of CONTENT_WORD
         for (POS allowablePartOfSpeech : allowablePartsOfSpeech) {
-          IIndexWord indexWord = dictionary.getIndexWord(word, allowablePartOfSpeech);
-          if (indexWord != null) {
-            outputToken.setType(TokenType.CONTENT_WORD);
-            break;
+          //IIndexWord indexWord = dictionary.getIndexWord(word, allowablePartOfSpeech);
+          List<String> stems = this.stemmer.findStems(word, allowablePartOfSpeech);
+          if(!stems.isEmpty()){
+        	  outputToken.setValue(stems.get(0));
+        	  break;
           }
+          
+//          if (indexWord != null) {
+//        	System.out.println(indexWord.getLemma());
+//            outputToken.setType(TokenType.CONTENT_WORD);
+//            break;
+//          }
         }
       }
       outputTokens.add(outputToken);
