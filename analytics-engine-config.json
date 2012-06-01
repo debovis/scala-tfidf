@@ -4,6 +4,18 @@
             "port": 27017
         },
         "database": "sparc-platform-dev",
-        "collection": "point-data-warehouse"
+        "collection": "point-data-warehouse",
+        "username": "",
+        "password": ""
+    },
+    "sparcet": {
+    	"server": {
+    		"host": "107.20.154.14",
+    		"port":27017
+    	},
+    	"database": "sparcet",
+    	"collection" : "Sparcet",
+    	"username": "sparcet",
+        "password": "6d0bb00954ceb7fbee436bb55a8397a9"
     }
 }

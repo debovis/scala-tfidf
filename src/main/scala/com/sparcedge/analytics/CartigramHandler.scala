@@ -16,55 +16,63 @@ import org.joda
 import com.mongodb.casbah.query.Imports._
 import com.mongodb.casbah.query._
 import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.Imports.{MongoDBObject,ObjectId}
+import com.mongodb.casbah.Imports.{MongoDBObject,ObjectId,BasicDBList}
 
 import com.sparcedge.analytics.mongodb.MongoCollectionWrapper
 
 class CartigramHandler extends Actor{
 	implicit val formats = Serialization.formats(NoTypeHints)
 
-			def receive = {
-			case cartRequest (requestData, ctx) =>
+	def receive = {
+		case cartRequest (requestData, ctx) =>
 
-			//  if they give us a date, lets use it otherwise now
-			var requestedDate = Some("")
-			val fmt = DateTimeFormat.forPattern("dd/MM/yyyy");
+		//  if they give us a date, lets use it otherwise now
+		var requestedDate = Some("")
+		val fmt = DateTimeFormat.forPattern("dd/MM/yyyy");
+		//var date1 = new DateTime()
+		var date1 = fmt.parseDateTime("04/09/2012")
+		if(requestData.get("date") != None){
+			requestedDate = Some(requestData.get("date").get)
+			//date1 = fmt.parseDateTime(requestedDate.get)
+		}
+		
+		var date2 = date1.plusDays(7) //$lt date2.getMillis() 
+		
+		// 1334781223000 
+		// 1346731200000
+		//println("%d %d".format(date1.getMillis(), date2.getMillis()))
+		//val q:MongoDBObject =  ("ts" $gte date1.getMillis() $lt date2.getMillis())// ++ ("r" -> "sparc-bldg-power")
+		//val ts = MongoDBObject("ts" -> MongoDBObject("$gte" -> date1.getMillis(), "$lte" -> date2.getMillis()))
+		//val ts = MongoDBObject("ts"-> date1.getMillis().toLong)
+		
+		val connection = new MongoCollectionWrapper("sparcet")
+		val collection = connection.getCollection
+		var sparcets:List[Sparcet] = List()
+		var limit = 1000
+		if(requestData.get("limit") != None) 
+			limit = Integer.parseInt(requestData.get("limit").get)
 			
-			
-			//var date1 = new DateTime()
-			var date1 = fmt.parseDateTime("04/09/2012")
-			if(requestData.get("date") != None){
-				requestedDate = Some(requestData.get("date").get)
-				//date1 = fmt.parseDateTime(requestedDate.get)
+		collection.find().limit(limit).foreach{ u =>
+			val obj = u.asDBObject
+			var labels:List[Any] = List()
+			if(obj.get("Labels") != null){
+			   labels = obj.as[BasicDBList]("Labels").toList
 			}
-			
-			var date2 = date1.plusDays(7) //$lt date2.getMillis() 
-			
-			// 1334781223000 
-			
-			// 1346731200000
-			//println("%d %d".format(date1.getMillis(), date2.getMillis()))
-			
-			val q:MongoDBObject =  ("ts" $gte date1.getMillis() $lt date2.getMillis())// ++ ("r" -> "sparc-bldg-power")
-			
-			val collection = new MongoCollectionWrapper().getCollection
-			//val ts = MongoDBObject("ts" -> MongoDBObject("$gte" -> date1.getMillis(), "$lte" -> date2.getMillis()))
-			//val ts = MongoDBObject("ts"-> date1.getMillis().toLong)
+			sparcets =  new Sparcet(obj.get("Reason").toString(), obj.get("PersonalThanks").toString(),labels) :: sparcets
+		}
+		
+		connection.getConnection.close()
 
-			val u = for(x <- collection.find(q)) yield println(x)
+		ctx.complete(
+				HttpResponse (
+						status = StatusCodes.OK,
+						headers = Nil,
+						content = HttpContent(
+								`application/json`,
+								compact(render( ("similarity" -> sparcets(5).toStringtest()) ~ ("count" -> sparcets.size.toString())))
+								)))
 
-			println(u.size)
-
-			ctx.complete(
-					HttpResponse (
-							status = StatusCodes.OK,
-							headers = Nil,
-							content = HttpContent(
-									`application/json`,
-									compact(render("similarity" -> ""))
-									)))
-
-			case _ =>
+		case _ =>
 	}
 }
 
@@ -78,6 +86,16 @@ case class Event (
 		resource: Option[String] = None,
 		data: Option[JObject] = None
 		)
+		
+case class Sparcet(
+		reason: String,
+		personalThanks: String,
+		labels: List[Any]
+){
+  def toStringtest():String = {
+    "reason - %s, personalThanks - %s, labels - %s".format(reason,personalThanks,labels)
+  }
+}
 
 		//	private val defaultClientMap:Map[String,String] = Map[String,String]("t" -> "va", "d" -> "sparc","private_key" -> scala.io.Source.fromFile("keys/analytics_rsa_private.pem").mkString)
 		//

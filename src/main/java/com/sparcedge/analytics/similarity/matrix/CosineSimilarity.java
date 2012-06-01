@@ -21,8 +21,6 @@ public class CosineSimilarity extends AbstractSimilarity {
 	 * Compute Similarity of targetDoc to all in sourceDoc
 	 */
 	public RealMatrix similarity(RealMatrix sourceDocuments, RealMatrix targetDoc) {
-		System.out.println(sourceDocuments.toString());
-		System.out.println(targetDoc.toString());
 		RealMatrix res = new OpenMapRealMatrix(sourceDocuments.getRowDimension(),1);
 		for(int i=0;i<sourceDocuments.getColumnDimension();i++){
 			res.addToEntry(i, 0, computeSimilarity(sourceDocuments.getColumnMatrix(i),targetDoc));

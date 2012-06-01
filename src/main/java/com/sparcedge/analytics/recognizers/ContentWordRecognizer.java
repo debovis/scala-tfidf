@@ -46,7 +46,13 @@ public class ContentWordRecognizer implements IRecognizer {
         
         // TODO: Change indexWord to stemmed word if available, and use .WORD instead of CONTENT_WORD
         for (POS allowablePartOfSpeech : allowablePartsOfSpeech) {
-          //IIndexWord indexWord = dictionary.getIndexWord(word, allowablePartOfSpeech);
+          IIndexWord indexWord = dictionary.getIndexWord(word, allowablePartOfSpeech);
+          if(indexWord !=null) {
+        	  	for(IWordID w : indexWord.getWordIDs()){
+        	  		System.out.println(dictionary.getWord(w).toString());
+        	  	}
+          }
+         
           List<String> stems = this.stemmer.findStems(word, allowablePartOfSpeech);
           if(!stems.isEmpty()){
         	  outputToken.setValue(stems.get(0));
