@@ -8,7 +8,7 @@
         "username": "",
         "password": ""
     },
-    "sparcet": {
+    "sparcet-prod": {
     	"server": {
     		"host": "107.20.154.14",
     		"port":27017
@@ -17,5 +17,15 @@
     	"collection" : "Sparcet",
     	"username": "sparcet",
         "password": "6d0bb00954ceb7fbee436bb55a8397a9"
+    },
+    "sparcet-local": {
+    	"server": {
+    		"host": "localhost",
+    		"port":27017
+    	},
+    	"database": "sparcet",
+    	"collection" : "Sparcet",
+    	"username": "",
+        "password": ""
     }
 }

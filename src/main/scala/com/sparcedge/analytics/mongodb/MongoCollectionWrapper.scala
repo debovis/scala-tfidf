@@ -12,11 +12,14 @@ class MongoCollectionWrapper(item:String) {
 	val mongoStoreConfig:MongoDBStore = MongoDBStore.apply(item)
 	val dbName = mongoStoreConfig.dbName
 	val collName = mongoStoreConfig.collection
+	println("%s - %s".format(dbName,collName))
 
 	def getCollection: MongoCollection = {
 	    val mongo = MongoConnection(mongoStoreConfig.server, mongoStoreConfig.port)
-	    if(mongo.getDB(dbName).authenticate(mongoStoreConfig.username, mongoStoreConfig.password)){
-	    	println("connection established")
+	    if(mongoStoreConfig.username != "" && mongoStoreConfig.password != ""){
+		    if(mongo.getDB(dbName).authenticate(mongoStoreConfig.username, mongoStoreConfig.password)){
+		    	println("connection established")
+		    }
 	    }
 	    mongo(dbName)(collName)
 	}

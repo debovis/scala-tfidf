@@ -45,7 +45,7 @@ class CartigramHandler extends Actor{
 		//val ts = MongoDBObject("ts" -> MongoDBObject("$gte" -> date1.getMillis(), "$lte" -> date2.getMillis()))
 		//val ts = MongoDBObject("ts"-> date1.getMillis().toLong)
 		
-		val connection = new MongoCollectionWrapper("sparcet")
+		val connection = new MongoCollectionWrapper("sparcet-local")
 		val collection = connection.getCollection
 		var sparcets:List[Sparcet] = List()
 		var limit = 1000
