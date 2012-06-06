@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.sparcedge.analytics.tokenizers.Token;
 import com.sparcedge.analytics.tokenizers.TokenType;
 import edu.mit.jwi.Dictionary;
@@ -24,50 +26,54 @@ import edu.mit.jwi.morph.WordnetStemmer;
  */
 public class ContentWordRecognizer implements IRecognizer {
 
-  private IDictionary dictionary;
-  private WordnetStemmer stemmer;
-  private List<POS> allowablePartsOfSpeech = Arrays.asList(new POS[] {
-    POS.NOUN, POS.VERB, POS.ADJECTIVE, POS.ADVERB});
-  
-  public void init() throws Exception {
-    this.dictionary = new Dictionary(new URL("file", null, "./temp/WordNet-3.0/dict/"));
-    dictionary.open();
-    this.stemmer = new WordnetStemmer(this.dictionary);
-  }
+	private IDictionary dictionary;
+	private WordnetStemmer stemmer;
+	private List<POS> allowablePartsOfSpeech = Arrays.asList(new POS[] {
+			POS.NOUN, POS.VERB, POS.ADJECTIVE, POS.ADVERB});
 
-  public List<Token> recognize(List<Token> tokens) {
-    List<Token> outputTokens = new ArrayList<Token>();
-    for (Token token : tokens) {
-      Token outputToken = new Token(token.getValue(), token.getType());
-     
-      // Filter for only tokentype word
-      if (token.getType() == TokenType.WORD) {
-        String word = token.getValue();
-        
-        // TODO: Change indexWord to stemmed word if available, and use .WORD instead of CONTENT_WORD
-        for (POS allowablePartOfSpeech : allowablePartsOfSpeech) {
-          IIndexWord indexWord = dictionary.getIndexWord(word, allowablePartOfSpeech);
-          if(indexWord !=null) {
-        	  	for(IWordID w : indexWord.getWordIDs()){
-        	  		System.out.println(dictionary.getWord(w).toString());
-        	  	}
-          }
-         
-          List<String> stems = this.stemmer.findStems(word, allowablePartOfSpeech);
-          if(!stems.isEmpty()){
-        	  outputToken.setValue(stems.get(0));
-        	  break;
-          }
-          
-//          if (indexWord != null) {
-//        	System.out.println(indexWord.getLemma());
-//            outputToken.setType(TokenType.CONTENT_WORD);
-//            break;
-//          }
-        }
-      }
-      outputTokens.add(outputToken);
-    }
-    return outputTokens;
-  }
+	public void init() throws Exception {
+		this.dictionary = new Dictionary(new URL("file", null, "./temp/WordNet-3.0/dict/"));
+		dictionary.open();
+		this.stemmer = new WordnetStemmer(this.dictionary);
+	}
+
+	public List<Token> recognize(List<Token> tokens) {
+		List<Token> outputTokens = new ArrayList<Token>();
+		for (Token token : tokens) {
+			Token outputToken = new Token(token.getValue(), token.getType());
+
+			// Filter for only tokentype word
+			if (token.getType() == TokenType.WORD) {
+				String word = token.getValue();
+				if(!StringUtils.isEmpty(word)){
+
+					// TODO: Change indexWord to stemmed word if available, and use .WORD instead of CONTENT_WORD
+					for (POS allowablePartOfSpeech : allowablePartsOfSpeech) {
+//						IIndexWord indexWord = dictionary.getIndexWord(word, allowablePartOfSpeech);
+//						if(indexWord !=null) {
+//							for(IWordID w : indexWord.getWordIDs()){
+//								System.out.println(dictionary.getWord(w).toString());
+//							}
+//						}
+
+						//Analyzer ngram = new NGramAnalyzer();
+						
+						List<String> stems = this.stemmer.findStems(word, allowablePartOfSpeech);
+						if(!stems.isEmpty()){
+							outputToken.setValue(stems.get(0));
+							break;
+						}
+
+						//          if (indexWord != null) {
+							//        	System.out.println(indexWord.getLemma());
+						//            outputToken.setType(TokenType.CONTENT_WORD);
+						//            break;
+						//          }
+					}
+				}
+			}
+			outputTokens.add(outputToken);
+		}
+		return outputTokens;
+	}
 }

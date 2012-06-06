@@ -3,11 +3,13 @@ package com.sparcedge.analytics.indexers.matrix;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.io.StringReader;
 
 import com.sparcedge.analytics.recognizers.BoundaryRecognizer;
 import com.sparcedge.analytics.recognizers.ContentWordRecognizer;
@@ -18,8 +20,14 @@ import com.sparcedge.analytics.tokenizers.Token;
 import com.sparcedge.analytics.tokenizers.TokenType;
 import com.sparcedge.analytics.tokenizers.WordTokenizer;
 
+import org.apache.lucene.util.*;
+import org.apache.lucene.analysis.*;
+import org.apache.lucene.analysis.shingle.ShingleAnalyzerWrapper;
+import org.apache.lucene.analysis.tokenattributes.*;
+
 import org.apache.commons.collections15.Bag;
 import org.apache.commons.collections15.bag.HashBag;
+import org.apache.commons.collections15.bag.TreeBag;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
@@ -39,17 +47,20 @@ public class TfGenerator {
 		Map<Integer,String> 	wordIdValueMap 				= new HashMap<Integer,String>();
 		Map<Integer,String> 	documentIdNameMap 			= new HashMap<Integer,String>();
 		Map<String,Bag<String>> documentWordFrequencyMap 	= new HashMap<String,Bag<String>>();
+		Bag<String>				allStrings					= new TreeBag<String>();
 		SortedSet<String> 		wordSet 					= new TreeSet<String>();
 		Integer 				docId = 0;
 
 		for (String key : documents.keySet()) {
 			String text = getText(documents.get(key));
-			Bag<String> wordFrequencies = getWordFrequencies(text);
+			Bag<String> wordFrequencies = getLuceneWordFrequencies(text);
 			wordSet.addAll(wordFrequencies.uniqueSet());
 			documentWordFrequencyMap.put(key, wordFrequencies);
 			documentIdNameMap.put(docId, key);
 			docId++;
 		}
+		
+		
 		// create a Map of ids to words from the wordSet
 		int wordId = 0;
 		for (String word : wordSet) {
@@ -67,6 +78,7 @@ public class TfGenerator {
 				Bag<String> wordFrequencies = documentWordFrequencyMap.get(docName);
 				String word = wordIdValueMap.get(i);
 				int count = wordFrequencies.getCount(word);
+				System.out.println(word + " " + count);
 				matrix.setEntry(i, j, count);
 			}
 		}
@@ -94,30 +106,29 @@ public class TfGenerator {
 		recognizerChain.init();
 		List<Token> recognizedTokens = recognizerChain.recognize(tokens);
 		for (Token recognizedToken : recognizedTokens) {
-			//    	ABBREVIATION, 
-			//    	  COMBINED, 
-			//    	  PHRASE, 
-			//    	  EMOTICON, 
-			//    	  INTERNET, 
-			//    	  WORD,
-			//    	  STOP_WORD,
-			//    	  CONTENT_WORD,
-			//    	  NUMBER, 
-			//    	  WHITESPACE,
-			//    	  PUNCTUATION, 
-			//    	  PLACE, 
-			//    	  ORGANIZATION,
-			//    	  MARKUP, 
-			//    	  UNKNOWN
-
 			if (	recognizedToken.getType() == TokenType.ABBREVIATION ||  
 					recognizedToken.getType() == TokenType.PHRASE ||  
 					recognizedToken.getType() == TokenType.WORD ||
 					recognizedToken.getType() == TokenType.INTERNET) {
-				// lowercase words to treat Human and human as the same word
 				wordBag.add(StringUtils.lowerCase(recognizedToken.getValue()));
 			}
 		}
+		return wordBag;
+	}
+	
+	private static Bag<String> getLuceneWordFrequencies(String text) throws Exception {
+		Bag<String> wordBag = new HashBag<String>();
+		
+		Analyzer ngram = new ShingleAnalyzerWrapper(Version.LUCENE_35,2,3);
+		TokenStream tokenStream = ngram.tokenStream("content", new StringReader(text));
+		//OffsetAttribute offsetAttribute = tokenStream.addAttribute(OffsetAttribute.class);
+		CharTermAttribute charTermAttribute = tokenStream.addAttribute(CharTermAttribute.class);
+		while (tokenStream.incrementToken()){
+			
+			String tok = charTermAttribute.toString();
+			wordBag.add(tok);
+		}
+		
 		return wordBag;
 	}
 

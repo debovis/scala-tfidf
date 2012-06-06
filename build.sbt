@@ -36,5 +36,6 @@ libraryDependencies ++= Seq (
 	"commons-lang" % "commons-lang" % "2.3",
 	"edu.mit" % "jwi" % "2.2.2",
 	"joda-time" % "joda-time" % "2.1",
-	"org.joda" % "joda-convert" % "1.2"
+	"org.joda" % "joda-convert" % "1.2",
+	"org.apache.lucene" % "lucene-analyzers" % "3.5.0"
 ) 

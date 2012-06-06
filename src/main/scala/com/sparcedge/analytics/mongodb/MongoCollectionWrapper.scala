@@ -5,6 +5,8 @@ import com.mongodb.casbah.Imports.MongoDBObject
 import com.mongodb.DBObject
 import com.mongodb.Mongo
 
+import org.apache.commons.lang.StringUtils;
+
 import net.liftweb.json._
 
 class MongoCollectionWrapper(item:String) {
@@ -12,13 +14,12 @@ class MongoCollectionWrapper(item:String) {
 	val mongoStoreConfig:MongoDBStore = MongoDBStore.apply(item)
 	val dbName = mongoStoreConfig.dbName
 	val collName = mongoStoreConfig.collection
-	println("%s - %s".format(dbName,collName))
 
 	def getCollection: MongoCollection = {
 	    val mongo = MongoConnection(mongoStoreConfig.server, mongoStoreConfig.port)
-	    if(mongoStoreConfig.username != "" && mongoStoreConfig.password != ""){
+	    if(!StringUtils.isEmpty(mongoStoreConfig.username) && !StringUtils.isEmpty(mongoStoreConfig.password)){
 		    if(mongo.getDB(dbName).authenticate(mongoStoreConfig.username, mongoStoreConfig.password)){
-		    	println("connection established")
+		    	println("username - password auth used, connection established")
 		    }
 	    }
 	    mongo(dbName)(collName)
