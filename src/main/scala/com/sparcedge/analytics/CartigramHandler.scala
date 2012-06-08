@@ -17,6 +17,7 @@ import org.apache.commons.lang.StringUtils
 import java.io.StringReader
 import java.util.Date
 import java.text.SimpleDateFormat
+import java.util.LinkedHashMap
 
 import com.mongodb.casbah.query.Imports._
 import com.mongodb.casbah.query._
@@ -63,12 +64,16 @@ class CartigramHandler extends Actor{
 		val connection = new MongoCollectionWrapper("sparcet-local")
 		val collection = connection.getCollection
 		var sparcets:List[Sparcet] = List()
+		var sparcetMap = new LinkedHashMap[String,String]
 		var limit = 1000
+		val idfClass 				= new IdfIndexer()
+		val cosineSim 			= new CosineSimilarity()
 		if(requestData.get("limit") != None) 
 			limit = Integer.parseInt(requestData.get("limit").get)
 			
 		val randomGen = Random
-			
+		
+		var i=0
 		collection.find().limit(limit).foreach{ u =>
 			val obj = u.asDBObject
 			var labels:List[Any] = List()
@@ -85,31 +90,48 @@ class CartigramHandler extends Actor{
 			}
 			
 			//documents.put("doc%s".format(randomGen.nextInt(100000)),reason + " " + thanks)
+			
+			// analyze spracts with shingleAnalyzer
 			val scet =  new Sparcet(reason, thanks,labels)
-			sparcets = scet :: sparcets
-			
-//			TokenStream tokenStream = analyzer.tokenStream(fieldName, reader);
-//			OffsetAttribute offsetAttribute = tokenStream.addAttribute(OffsetAttribute.class);
-//			CharTermAttribute charTermAttribute = tokenStream.addAttribute(CharTermAttribute.class);
+//			sparcets = scet :: sparcets
 //			
-//			while (tokenStream.incrementToken()) {
-//			    int startOffset = offsetAttribute.startOffset();
-//			    int endOffset = offsetAttribute.endOffset();
-//			    String term = charTermAttribute.toString();
+//			val ngram = new ShingleAnalyzerWrapper(Version.LUCENE_35,2,3)
+//			val tokenStream = ngram.tokenStream("content", scet.toStringReader())
+			println(scet.toStringtest())
+//			val offsetAttribute = tokenStream.addAttribute(classOf[OffsetAttribute]);
+//			val charTermAttribute = tokenStream.addAttribute(classOf[CharTermAttribute])
+//			while (tokenStream.incrementToken()){
+//				println(charTermAttribute.toString()) //.replaceAll(" _ ",""))
 //			}
-//			
-			val ngram = new ShingleAnalyzerWrapper(Version.LUCENE_35,2,3)
-			val tokenStream = ngram.tokenStream("content", scet.toStringReader())
-			println(scet.toString())
-			val offsetAttribute = tokenStream.addAttribute(classOf[OffsetAttribute]);
-			val charTermAttribute = tokenStream.addAttribute(classOf[CharTermAttribute])
-			while (tokenStream.incrementToken()){
-				println(charTermAttribute.toString()) //.replaceAll(" _ ",""))
-			}
 			
+			// TODO: use TFGenerator and try own wordngram analysis 
+			sparcetMap.put("doc%d".format(i),scet.toString())
+			i+=1
 		}
 		connection.getConnection.close()
 		
+		val res = TfGenerator.generateMatrix(sparcetMap)
+		val idfRes = idfClass.transform(res);
+		val comparisonVect = idfRes.getColumnVector(idfRes.getColumnDimension()-1);
+		var idfSubMatrix = idfRes.getSubMatrix(0,idfRes.getRowDimension()-1, 0, idfRes.getColumnDimension()-2);
+		
+		var simList:List[similarityResult] = List()
+		
+//		var randomInt = randomGen.nextInt()
+//		def testRandomInt { while(true) {if(randomInt < idfRes.getColumnDimension()) return else randomInt = randomGen.nextInt() }}
+		
+		  val keys = documents.keySet().toArray().toList
+		  val howSimilar = cosineSim.similarity(idfSubMatrix,comparisonVect).toArray().toList
+		  
+		  // zip lists to return
+		  keys.zip(howSimilar).foreach{x => 
+		    if(x._2.toDouble >0){
+		    	simList = new similarityResult(x._1.toString(), x._2.toDouble) :: simList
+		    }
+		  }
+		  // Sort it
+		  simList = simList.sortWith(_.similarity > _.similarity)
+			  
 		
 		
 //		val idfClass 				= new IdfIndexer()
@@ -124,10 +146,8 @@ class CartigramHandler extends Actor{
 						headers = Nil,
 						content = HttpContent(
 								`application/json`,
-								compact(render( ("similarity" -> sparcets(5).toStringtest()) ~ ("count" -> sparcets.size.toString())))
-								)
-							)
-					)
+								compact(render( "similarity" -> simList.map {w => ("title" -> w.title) ~ ("similarity" -> w.similarity)}))
+								)))
 
 		case _ =>
 	}

@@ -37,5 +37,6 @@ libraryDependencies ++= Seq (
 	"edu.mit" % "jwi" % "2.2.2",
 	"joda-time" % "joda-time" % "2.1",
 	"org.joda" % "joda-convert" % "1.2",
-	"org.apache.lucene" % "lucene-analyzers" % "3.5.0"
+	"org.apache.lucene" % "lucene-analyzers" % "3.5.0",
+	"edu.stanford.nlp" % "stanford-corenlp" % "1.3.1"
 ) 
