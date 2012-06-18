@@ -10,6 +10,8 @@ resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/release
 
 resolvers += "Spray Repo" at "http://repo.spray.cc"
 
+resolvers += "OpenNLP Repo" at "http://opennlp.sourceforge.net/maven2"
+
 seq(com.github.retronym.SbtOneJar.oneJarSettings: _*)
 
 seq(ScctPlugin.scctSettings: _*)
@@ -38,5 +40,7 @@ libraryDependencies ++= Seq (
 	"joda-time" % "joda-time" % "2.1",
 	"org.joda" % "joda-convert" % "1.2",
 	"org.apache.lucene" % "lucene-analyzers" % "3.5.0",
-	"edu.stanford.nlp" % "stanford-corenlp" % "1.3.1"
+	"edu.stanford.nlp" % "stanford-corenlp" % "1.3.1",
+	 "org.apache.opennlp" % "opennlp-tools" % "1.5.2-incubating",
+	 "org.apache.opennlp" % "opennlp-maxent" % "3.0.2-incubating"
 ) 

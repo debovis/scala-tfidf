@@ -45,7 +45,7 @@ public class ContentWordRecognizer implements IRecognizer {
 			// Filter for only tokentype word
 			if (token.getType() == TokenType.WORD) {
 				String word = token.getValue();
-				if(!StringUtils.isEmpty(word)){
+				if(!StringUtils.isEmpty(word) && word != null){
 
 					// TODO: Change indexWord to stemmed word if available, and use .WORD instead of CONTENT_WORD
 					for (POS allowablePartOfSpeech : allowablePartsOfSpeech) {
@@ -55,9 +55,6 @@ public class ContentWordRecognizer implements IRecognizer {
 //								System.out.println(dictionary.getWord(w).toString());
 //							}
 //						}
-
-						//Analyzer ngram = new NGramAnalyzer();
-						
 						List<String> stems = this.stemmer.findStems(word, allowablePartOfSpeech);
 						if(!stems.isEmpty()){
 							outputToken.setValue(stems.get(0));

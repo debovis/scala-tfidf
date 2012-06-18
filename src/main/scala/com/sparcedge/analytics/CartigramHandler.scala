@@ -34,6 +34,8 @@ import com.sparcedge.analytics.indexers.matrix.TfGenerator
 import com.sparcedge.analytics.indexers.matrix.IdfIndexer
 import com.sparcedge.analytics.similarity.matrix.CosineSimilarity
 import com.sparcedge.analytics.tokenizers.NGramAnalyzer
+import com.sparcedge.analytics.nerextractor.NameFinderLocal._
+import com.sparcedge.analytics.nerextractor.NameFinderLocal
 
 class CartigramHandler extends Actor{
 	implicit val formats = Serialization.formats(NoTypeHints)
@@ -97,7 +99,6 @@ class CartigramHandler extends Actor{
 //			
 //			val ngram = new ShingleAnalyzerWrapper(Version.LUCENE_35,2,3)
 //			val tokenStream = ngram.tokenStream("content", scet.toStringReader())
-			println(scet.toStringtest())
 //			val offsetAttribute = tokenStream.addAttribute(classOf[OffsetAttribute]);
 //			val charTermAttribute = tokenStream.addAttribute(classOf[CharTermAttribute])
 //			while (tokenStream.incrementToken()){
@@ -110,27 +111,35 @@ class CartigramHandler extends Actor{
 		}
 		connection.getConnection.close()
 		
+		
+		// Test out NameFinderLocal
+//		var nameFinder = new NameFinderLocal()
+//		sparcetMap.keySet().toArray().foreach{ u =>
+//		  	val s = sparcetMap.get(u)
+//		  	println(s)
+//			println(nameFinder.findNamedEntities(s).toArray().foreach(x => println(x.toString())))
+//		}
 		val res = TfGenerator.generateMatrix(sparcetMap)
-		val idfRes = idfClass.transform(res);
-		val comparisonVect = idfRes.getColumnVector(idfRes.getColumnDimension()-1);
-		var idfSubMatrix = idfRes.getSubMatrix(0,idfRes.getRowDimension()-1, 0, idfRes.getColumnDimension()-2);
-		
-		var simList:List[similarityResult] = List()
-		
-//		var randomInt = randomGen.nextInt()
-//		def testRandomInt { while(true) {if(randomInt < idfRes.getColumnDimension()) return else randomInt = randomGen.nextInt() }}
-		
-		  val keys = documents.keySet().toArray().toList
-		  val howSimilar = cosineSim.similarity(idfSubMatrix,comparisonVect).toArray().toList
-		  
-		  // zip lists to return
-		  keys.zip(howSimilar).foreach{x => 
-		    if(x._2.toDouble >0){
-		    	simList = new similarityResult(x._1.toString(), x._2.toDouble) :: simList
-		    }
-		  }
-		  // Sort it
-		  simList = simList.sortWith(_.similarity > _.similarity)
+//		val idfRes = idfClass.transform(res);
+//		val comparisonVect = idfRes.getColumnVector(idfRes.getColumnDimension()-1);
+//		var idfSubMatrix = idfRes.getSubMatrix(0,idfRes.getRowDimension()-1, 0, idfRes.getColumnDimension()-2);
+//		
+//		var simList:List[similarityResult] = List()
+//		
+////		var randomInt = randomGen.nextInt()
+////		def testRandomInt { while(true) {if(randomInt < idfRes.getColumnDimension()) return else randomInt = randomGen.nextInt() }}
+//		
+//		  val keys = documents.keySet().toArray().toList
+//		  val howSimilar = cosineSim.similarity(idfSubMatrix,comparisonVect).toArray().toList
+//		  
+//		  // zip lists to return
+//		  keys.zip(howSimilar).foreach{x => 
+//		    if(x._2.toDouble >0){
+//		    	simList = new similarityResult(x._1.toString(), x._2.toDouble) :: simList
+//		    }
+//		  }
+//		  // Sort it
+//		  simList = simList.sortWith(_.similarity > _.similarity)
 			  
 		
 		
@@ -146,9 +155,9 @@ class CartigramHandler extends Actor{
 						headers = Nil,
 						content = HttpContent(
 								`application/json`,
-								compact(render( "similarity" -> simList.map {w => ("title" -> w.title) ~ ("similarity" -> w.similarity)}))
+								compact(render( "similarity" -> "sdfdf"))
 								)))
-
+// simList.map {w => ("title" -> w.title) ~ ("similarity" -> w.similarity)}
 		case _ =>
 	}
 }

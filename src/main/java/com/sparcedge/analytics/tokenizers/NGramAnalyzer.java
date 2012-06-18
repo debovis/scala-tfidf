@@ -4,16 +4,22 @@ import java.io.Reader;
 
 import org.apache.lucene.util.*;
 import org.apache.lucene.analysis.*;
-import org.apache.lucene.analysis.ngram.*;
-import org.apache.lucene.analysis.shingle.ShingleAnalyzerWrapper;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.shingle.ShingleFilter;
+import org.apache.lucene.analysis.standard.StandardTokenizer;
 
 public class NGramAnalyzer extends Analyzer{
+	
+	private static final int minSingle = 2;
+	private static final int maxSingle = 4;
 
 	@Override
 	public TokenStream tokenStream(String fieldName, Reader reader) {
-		//return new StopFilter(Version.LUCENE_35, new LowerCaseFilter(Version.LUCENE_35, new NGramTokenizer(reader,2,4)),StopAnalyzer.ENGLISH_STOP_WORDS_SET);
-		return new NGramTokenizer(reader,2,4);
+//		StopFilter stopFilter = new StopFilter(Version.LUCENE_35, new StandardTokenizer(Version.LUCENE_35,reader),StopAnalyzer.ENGLISH_STOP_WORDS_SET);
+//		stopFilter.setEnablePositionIncrements(false);
+//		return new LowerCaseFilter(Version.LUCENE_35,new ShingleFilter(stopFilter,minSingle,maxSingle));
+		
+		StandardTokenizer stopFilter = new StandardTokenizer(Version.LUCENE_35,reader);
+		return new LowerCaseFilter(Version.LUCENE_35,new ShingleFilter(stopFilter,minSingle,maxSingle));
 	}
 
 }
