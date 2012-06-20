@@ -23,8 +23,7 @@ import com.sparcedge.analytics.tokenizers.TokenType;
 import com.sparcedge.analytics.tokenizers.WordNGramTokenizer;
 import com.sparcedge.analytics.tokenizers.WordTokenizer;
 import com.sparcedge.analytics.nerextractor.NERGenerator;
-import com.sparcedge.analytics.nerextractor.NameFinderLocal;
-import com.sparcedge.analytics.nerextractor.NameFinderLocal.NamedEntity;
+import com.sparcedge.analytics.nerextractor.NERGenerator.NERType;
 
 import org.apache.lucene.util.*;
 import org.apache.lucene.analysis.*;
@@ -60,17 +59,20 @@ public class TfGenerator {
 
 		for (String key : documents.keySet()) {
 			String text = getText(documents.get(key));			
-			Bag<String> wordFrequencies = getLuceneWordFrequenciesV2(text);
+			Bag<String> wordFrequencies = getWordFrequencies(text);
 			wordSet.addAll(wordFrequencies.uniqueSet());
-			//words.addAll(wordFrequencies);
+			words.addAll(wordFrequencies);
 			documentWordFrequencyMap.put(key, wordFrequencies);
 			documentIdNameMap.put(docId, key);
 			docId++;
 		}
 		
-		System.out.println(NERGenerator.generate(documents).uniqueSet());
 		System.out.println();
-		//System.out.println(words.uniqueSet());
+		System.out.println(NERGenerator.generate(NERType.OpenNLP,documents).uniqueSet());
+		System.out.println();
+		System.out.println(NERGenerator.generate(NERType.StanfordNLP,documents).uniqueSet());
+		System.out.println();
+		System.out.println(words.uniqueSet());
 		
 		// create a Map of ids to words from the wordSet
 		int wordId = 0;

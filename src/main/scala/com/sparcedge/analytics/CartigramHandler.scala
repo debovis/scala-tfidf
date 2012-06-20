@@ -34,8 +34,8 @@ import com.sparcedge.analytics.indexers.matrix.TfGenerator
 import com.sparcedge.analytics.indexers.matrix.IdfIndexer
 import com.sparcedge.analytics.similarity.matrix.CosineSimilarity
 import com.sparcedge.analytics.tokenizers.NGramAnalyzer
-import com.sparcedge.analytics.nerextractor.NameFinderLocal._
-import com.sparcedge.analytics.nerextractor.NameFinderLocal
+import com.sparcedge.analytics.nerextractor.AbstractNer.NamedEntityType
+import com.sparcedge.analytics.nerextractor.OpenNlpNer
 
 class CartigramHandler extends Actor{
 	implicit val formats = Serialization.formats(NoTypeHints)
