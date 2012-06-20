@@ -67,12 +67,11 @@ NamedEntity API
 		- {"data": 
 			{"data_set": [{"title":"doc1", "value":""},	{"title":"doc3", "value":""}]}
 		  }
-	{
 
 	Example:
-		- From running: $ python src/test/python/testSim.py
+		- From running: $ python src/test/python/testNer.py
 
-    "data": {
+    {"data": {
         "data_set": [
             {
                 "title": "doc0",
