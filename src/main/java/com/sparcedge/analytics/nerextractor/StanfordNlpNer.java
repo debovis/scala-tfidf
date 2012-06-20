@@ -19,10 +19,12 @@ public class StanfordNlpNer extends AbstractNer{
 	private AbstractSequenceClassifier<CoreLabel> classifier;
 	private String[] allowedEntities;
 
+	@SuppressWarnings("unchecked")
 	public StanfordNlpNer(String[] allowedEntities) {
 		this.classifier = CRFClassifier.getClassifierNoExceptions(serializedClassifier);
 		this.allowedEntities = allowedEntities;
 	}
+	@SuppressWarnings("unchecked")
 	public StanfordNlpNer() {
 		this.classifier = CRFClassifier.getClassifierNoExceptions(serializedClassifier);
 		this.allowedEntities = new String[]{"person", "organization", "location"};
@@ -64,3 +66,17 @@ public class StanfordNlpNer extends AbstractNer{
 	}
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

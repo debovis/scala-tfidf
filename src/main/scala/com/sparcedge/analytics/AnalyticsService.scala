@@ -66,7 +66,8 @@ trait AnalyticsService extends Directives {
 									`application/json`,
 									compact(render("error" -> "Problem parsing dataset")) )
 						))
-			  }}
+			  }
+			  }
 			}
 		}~
 		path("cartigram") {
@@ -89,6 +90,38 @@ trait AnalyticsService extends Directives {
 									compact(render("error" -> "Having a bad day?")) )
 						))
 		    }}
+		  }
+		}~
+		path("ner") {
+		  post { jsonpWithParameter("callback") { ctx : RequestContext => 
+		    val data = ctx.request.content.as[String].right.get toString
+			  
+			  try{
+			    
+			    // Is it JSON?
+			    val requestData = Some(parse(data))
+			    val NERActor = Actor.actorOf[NERHandler].start
+				NERActor ! NerRequest(requestData, ctx)
+				
+			  }
+		     // Not valid JSON
+			  catch{
+			    case e:net.liftweb.json.JsonParser.ParseException => 
+			      println(e)
+			      
+			      ctx.complete(
+			    		HttpResponse (
+							status = StatusCodes.BadRequest,
+							headers = Nil,
+							content = HttpContent(
+									`application/json`,
+									compact(render("error" -> "Problem parsing dataset")) )
+						))
+			  }
+		    
+		    
+		    }
+		    
 		  }
 		}
 	}	

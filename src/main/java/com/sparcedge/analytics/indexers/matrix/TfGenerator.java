@@ -3,11 +3,9 @@ package com.sparcedge.analytics.indexers.matrix;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.io.StringReader;
@@ -28,12 +26,10 @@ import com.sparcedge.analytics.nerextractor.NERGenerator.NERType;
 import org.apache.lucene.util.*;
 import org.apache.lucene.analysis.*;
 import org.apache.lucene.analysis.shingle.ShingleAnalyzerWrapper;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.*;
 
 import org.apache.commons.collections15.Bag;
 import org.apache.commons.collections15.bag.HashBag;
-import org.apache.commons.collections15.bag.TreeBag;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
@@ -65,12 +61,12 @@ public class TfGenerator {
 			documentWordFrequencyMap.put(key, wordFrequencies);
 			documentIdNameMap.put(docId, key);
 			docId++;
-		}
+		}	
 		
 		System.out.println();
-		System.out.println(NERGenerator.generate(NERType.OpenNLP,documents).uniqueSet());
+		System.out.println(NERGenerator.generate(NERType.OpenNLP,documents));
 		System.out.println();
-		System.out.println(NERGenerator.generate(NERType.StanfordNLP,documents).uniqueSet());
+		System.out.println(NERGenerator.generate(NERType.StanfordNLP,documents));
 		System.out.println();
 		System.out.println(words.uniqueSet());
 		

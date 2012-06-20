@@ -25,11 +25,7 @@ public class OpenNlpNer extends AbstractNer{
 	
 	/* , "date", "time", "percentage", "money" */
 	public static NamedEntityType[] ENTITY_TYPES = { NamedEntityType.PERSON,NamedEntityType.ORGANIZATION, NamedEntityType.LOCATION };
-	
-		/*
-		 * NamedEntityType.DATE, NamedEntityType.TIME, NamedEntityType.PERCENTAGE,
-		 * NamedEntityType.MONEY
-		 */
+					// NamedEntityType.DATE, NamedEntityType.TIME, NamedEntityType.PERCENTAGE, NamedEntityType.MONEY
 
 	NameFinderME[] finders = null;
 	NameFinderME personFinder = null;
@@ -126,6 +122,7 @@ public class OpenNlpNer extends AbstractNer{
 		inputStream.close();
 		return entities;
 	}
+	
 }
 
 
