@@ -27,14 +27,12 @@ class NERHandler extends Actor{
 					try {
 				  
 						// Extract documents and put into hashmap
-						(requestData.get \ "data" \ "data_set").extract[List[dataSet1]].foreach(d => documents.put(d.title, d.value))
+						(requestData.get \ "data").extract[List[dataSet]].foreach(d => documents.put(d.title, d.value))
 						var bag = NERGenerator.generate(NERType.OpenNLP,documents)
 						
 						bag.uniqueSet().toArray().toList.foreach{ u=>
 						  nerList = new nerResult(u.toString(), bag.getCount(u.toString())) :: nerList
-						}				
-						
-
+						}		
 					  ctx.complete(
 						HttpResponse (
 								status = StatusCodes.OK,
@@ -65,11 +63,6 @@ class NERHandler extends Actor{
 	}
 
 case class NerRequest(requestData:Some[net.liftweb.json.JsonAST.JValue], ctx: RequestContext)
-
-class dataSet1(
-		val title : String,
-		val value : String
-)
 
 class nerResult(
 		val word: String,

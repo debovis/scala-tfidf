@@ -57,18 +57,18 @@ public class TfGenerator {
 			String text = getText(documents.get(key));			
 			Bag<String> wordFrequencies = getWordFrequencies(text);
 			wordSet.addAll(wordFrequencies.uniqueSet());
-			words.addAll(wordFrequencies);
+			//words.addAll(wordFrequencies);
 			documentWordFrequencyMap.put(key, wordFrequencies);
 			documentIdNameMap.put(docId, key);
 			docId++;
 		}	
 		
-		System.out.println();
-		System.out.println(NERGenerator.generate(NERType.OpenNLP,documents));
-		System.out.println();
-		System.out.println(NERGenerator.generate(NERType.StanfordNLP,documents));
-		System.out.println();
-		System.out.println(words.uniqueSet());
+//		System.out.println();
+//		System.out.println(NERGenerator.generate(NERType.OpenNLP,documents));
+//		System.out.println();
+//		System.out.println(NERGenerator.generate(NERType.StanfordNLP,documents));
+//		System.out.println();
+//		System.out.println(words.uniqueSet());
 		
 		// create a Map of ids to words from the wordSet
 		int wordId = 0;

@@ -19,7 +19,7 @@ class testNer():
 
 	def dataObj(self):
 		return {
-				'data_set':[]
+				'data':[]
 				}
 
 	def xlsToJson(self,file_location):
@@ -47,8 +47,8 @@ class testNer():
 		return [self.questions[q] for q in self.questions if category in self.questions[q]['category']]
 
 	def queryNER(self,data):
-		newData = simplejson.dumps({'data':data})
-		prettyJson = simplejson.dumps({'data':data}, sort_keys=True, indent=4 * ' ')
+		newData = simplejson.dumps(data)
+		prettyJson = simplejson.dumps(data, sort_keys=True, indent=4 * ' ')
 		#print newData
 		print '\n'.join([l.rstrip() for l in  prettyJson.splitlines()])
 		request = urllib2.Request(self.uri,newData,self.headers)
@@ -80,7 +80,7 @@ class testNer():
 		
 		i=0
 		for item in questions:
-			data['data_set'].append({'title':str('doc{0}'.format(i)), 'value': item['question']})
+			data['data'].append({'title':str('doc{0}'.format(i)), 'value': item['question']})
 			i = i+1
 
 		print 'category chosen is: {0}'.format(category)
@@ -94,6 +94,7 @@ if __name__ == '__main__':
 	else: 
 		ts = testNer()
 	res = ts.randomQuestionSet()
+	print res
 	simDict = simplejson.loads(res)
 	sim = simplejson.dumps(simDict, sort_keys=True, indent=4 * ' ')
 	print '\n'.join([l.rstrip() for l in sim.splitlines()])
