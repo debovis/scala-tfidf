@@ -85,7 +85,6 @@ class testNer():
 
 		print 'category chosen is: {0}'.format(category)
 		return self.queryNER(data)
-		
 
 if __name__ == '__main__':
 	args = sys.argv
@@ -94,9 +93,11 @@ if __name__ == '__main__':
 	else: 
 		ts = testNer()
 	res = ts.randomQuestionSet()
-	print res
-	simDict = simplejson.loads(res)
-	sim = simplejson.dumps(simDict, sort_keys=True, indent=4 * ' ')
-	print '\n'.join([l.rstrip() for l in sim.splitlines()])
+	try:
+		nerDict = simplejson.loads(res)
+		sim = simplejson.dumps(nerDict, sort_keys=True, indent=4 * ' ')
+		print '\n'.join([l.rstrip() for l in sim.splitlines()])
+	except Exception:
+		print 'invalid response'
 	
 	

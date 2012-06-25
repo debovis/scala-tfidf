@@ -100,8 +100,13 @@ if __name__ == '__main__':
 		ts = testSimilarity(args[1])
 	else: 
 		ts = testSimilarity()
-	simDict = simplejson.loads(ts.randomQuestionSet())
-	sim = simplejson.dumps(simDict, sort_keys=True, indent=4 * ' ')
-	print '\n'.join([l.rstrip() for l in sim.splitlines()])
+	
+	res = ts.randomQuestionSet()
+	try:
+		simDict = simplejson.loads(res)
+		sim = simplejson.dumps(simDict, sort_keys=True, indent=4 * ' ')
+		print '\n'.join([l.rstrip() for l in sim.splitlines()])
+	except Exception:
+		print 'invalid response'
 	
 	

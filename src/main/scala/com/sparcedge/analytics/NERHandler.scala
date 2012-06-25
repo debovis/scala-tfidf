@@ -2,17 +2,19 @@ package com.sparcedge.analytics
 
 import akka.actor.Actor
 import cc.spray.RequestContext
-import cc.spray.http.{HttpResponse,HttpContent,StatusCodes,HttpHeader}
+import cc.spray.http.{HttpResponse,HttpContent,StatusCodes,StatusCode,HttpHeader}
 import cc.spray.http.MediaTypes._
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import java.util.LinkedHashMap
 
+import org.apache.commons.collections15.Bag
+import org.apache.commons.collections15.bag.HashBag
+
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import com.sparcedge.analytics.nerextractor.NERGenerator
-import com.sparcedge.analytics.nerextractor.NERGenerator._
 
 class NERHandler extends Actor{
 
@@ -28,37 +30,33 @@ class NERHandler extends Actor{
 				  
 						// Extract documents and put into hashmap
 						(requestData.get \ "data").extract[List[dataSet]].foreach(d => documents.put(d.title, d.value))
-						var bag = NERGenerator.generate(NERType.OpenNLP,documents)
+						var ner = NERGenerator.getStanfordNlpNerClassifier()
+						val bag = new HashBag[String]
+						for(i <- documents.keySet().toArray.toList){
+						  bag.addAll(ner.findEntities(documents.get(i)))
+						}
 						
 						bag.uniqueSet().toArray().toList.foreach{ u=>
 						  nerList = new nerResult(u.toString(), bag.getCount(u.toString())) :: nerList
 						}		
-					  ctx.complete(
-						HttpResponse (
-								status = StatusCodes.OK,
-								headers = Nil,
-								content = HttpContent(
-										`application/json`,
-										compact(render( "NamedEntities" -> nerList.map{ e => ("word" -> e.word) ~ ("freq" -> e.freq) }))
-										)))
+					  ctx.complete(response(StatusCodes.OK,compact(render( "NamedEntities" -> nerList.map{ e => ("word" -> e.word) ~ ("freq" -> e.freq) }))))
 									
 				  }
 				  catch{
 		    		case e:Exception => 
-		    		  
 		    		  	println(e.toString())
-		    		  	ctx.complete(
-							HttpResponse (
-								status = StatusCodes.OK,
+		    		  	ctx.complete(response(StatusCodes.OK, compact(render("similarity_error" -> e.toString()))))
+				  }
+			case _ =>
+		}
+	
+		def response(status:StatusCode, jsonResponse: String): HttpResponse = {
+			HttpResponse (
+								status = status,
 								headers = Nil,
 								content = HttpContent(
-										`application/json`,
-										compact(render("similarity_error" -> e.toString()))
-						)))
-				  }
-				  
-			// Wildcard case
-			case _ =>
+										`application/json`,jsonResponse
+						))
 		}
 	}
 

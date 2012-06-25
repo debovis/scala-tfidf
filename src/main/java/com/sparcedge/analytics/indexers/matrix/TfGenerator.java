@@ -20,8 +20,6 @@ import com.sparcedge.analytics.tokenizers.Token;
 import com.sparcedge.analytics.tokenizers.TokenType;
 import com.sparcedge.analytics.tokenizers.WordNGramTokenizer;
 import com.sparcedge.analytics.tokenizers.WordTokenizer;
-import com.sparcedge.analytics.nerextractor.NERGenerator;
-import com.sparcedge.analytics.nerextractor.NERGenerator.NERType;
 
 import org.apache.lucene.util.*;
 import org.apache.lucene.analysis.*;
@@ -40,6 +38,7 @@ import org.apache.commons.math3.linear.RealMatrix;
  * @author Sujit Pal
  * @version $Revision: 21 $
  */
+
 public class TfGenerator {
 
 
