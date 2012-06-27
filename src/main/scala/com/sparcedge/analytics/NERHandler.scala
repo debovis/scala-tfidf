@@ -30,6 +30,7 @@ class NERHandler extends Actor{
 				  
 						// Extract documents and put into hashmap
 						(requestData.get \ "data").extract[List[dataSet]].foreach(d => documents.put(d.title, d.value))
+						
 						var ner = NERGenerator.getStanfordNlpNerClassifier()
 						val bag = new HashBag[String]
 						for(i <- documents.keySet().toArray.toList){

@@ -2,11 +2,13 @@ package com.sparcedge.analytics
 
 import akka.actor.Actor
 import cc.spray.RequestContext
-import cc.spray.http.{HttpResponse,HttpContent,StatusCodes,HttpHeader}
+import cc.spray.http.{HttpResponse,HttpContent,StatusCodes,HttpHeader,StatusCode}
 import cc.spray.http.MediaTypes._
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
-import java.util.LinkedHashMap;
+import java.util.LinkedHashMap
+
+import org.slf4j.{Logger, LoggerFactory}
 
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -18,6 +20,7 @@ import com.sparcedge.analytics.similarity.matrix.CosineSimilarity
 
 class SimilarityHandler extends Actor {
 	implicit val formats = Serialization.formats(NoTypeHints)
+	val log = LoggerFactory.getLogger(getClass)
   
 	def receive = {
 		case similarityRequest	(requestData, ctx) =>
@@ -64,28 +67,23 @@ class SimilarityHandler extends Actor {
 			  // Sort it
 			  simList = simList.sortWith(_.similarity > _.similarity)
 			  
-				ctx.complete(
-					HttpResponse (
-						status = StatusCodes.OK,
-						headers = List(HttpHeader("Connection", "Keep-Alive")),
-						content = HttpContent(
-								`application/json`,
-								compact(render("similarity" -> simList.map {w => ("title" -> w.title) ~ ("similarity" -> w.similarity)}))
-						)))
+			  response(StatusCodes.OK, compact(render("similarity" -> simList.map {w => ("title" -> w.title) ~ ("similarity" -> w.similarity)})))
+			  
 		  } catch {
 		    		case e:Exception => 
 		    		  	println(e.toString())
-		    		  	ctx.complete(
-							HttpResponse (
-								status = StatusCodes.OK,
-								headers = Nil,
-								content = HttpContent(
-										`application/json`,
-										compact(render("similarity" -> e.toString()))
-						)))
+		    		  	response(StatusCodes.OK, compact(render("similarity" -> e.toString())))
 		  }
 		case _ =>
 	}
+	def response(status:StatusCode, jsonResponse: String): HttpResponse = {
+			HttpResponse (
+								status = status,
+								headers = Nil,
+								content = HttpContent(
+										`application/json`,jsonResponse
+						))
+		}
 }
 
 class dataSet(

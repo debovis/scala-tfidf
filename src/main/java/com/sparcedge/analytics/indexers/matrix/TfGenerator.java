@@ -33,6 +33,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Generate the word occurence vector for a document collection.
  * @author Sujit Pal
@@ -40,6 +43,8 @@ import org.apache.commons.math3.linear.RealMatrix;
  */
 
 public class TfGenerator {
+	
+	private static Logger log = LoggerFactory.getLogger(TfGenerator.class);
 
 
 	public static RealMatrix generateMatrix(HashMap<String, String> documents) throws Exception {
@@ -89,7 +94,7 @@ public class TfGenerator {
 				matrix.setEntry(i, j, count);
 			}
 		}
-		System.out.println("created matrix with dimensions (" + matrix.getColumnDimension() + "," + matrix.getRowDimension() + ")");
+		log.debug("created matrix with dimensions (" + matrix.getColumnDimension() + "," + matrix.getRowDimension() + ")");
 		return matrix;
 	}
 
