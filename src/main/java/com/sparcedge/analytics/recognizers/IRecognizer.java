@@ -26,4 +26,5 @@ public interface IRecognizer {
    * or a token may be broken up into multiple tokens.
    */
   public List<Token> recognize(List<Token> tokens);
+  public void close();
 }

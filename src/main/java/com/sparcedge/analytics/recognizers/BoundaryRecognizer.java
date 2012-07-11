@@ -27,6 +27,7 @@ public class BoundaryRecognizer implements IRecognizer {
     this.whitespacePattern = Pattern.compile("\\s+");
     this.punctuationPattern = Pattern.compile("\\p{Punct}");
   }
+  public void close() {}
 
   /**
    * @see com.mycompany.jrocker.recognizers.IRecognizer#extractEntities(java.util.List)

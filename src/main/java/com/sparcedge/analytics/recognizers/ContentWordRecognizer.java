@@ -1,5 +1,6 @@
 package com.sparcedge.analytics.recognizers;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,6 +10,8 @@ import org.apache.commons.lang.StringUtils;
 
 import com.sparcedge.analytics.tokenizers.Token;
 import com.sparcedge.analytics.tokenizers.TokenType;
+
+import edu.mit.jwi.CachingDictionary;
 import edu.mit.jwi.Dictionary;
 import edu.mit.jwi.IDictionary;
 import edu.mit.jwi.item.IIndexWord;
@@ -30,11 +33,21 @@ public class ContentWordRecognizer implements IRecognizer {
 	private WordnetStemmer stemmer;
 	private List<POS> allowablePartsOfSpeech = Arrays.asList(new POS[] {
 			POS.NOUN, POS.VERB, POS.ADJECTIVE, POS.ADVERB});
+	
+//	public ContentWordRecognizer(CachingDictionary cachedDict){
+//		
+//	}
 
 	public void init() throws Exception {
-		this.dictionary = new Dictionary(new URL("file", null, "./temp/WordNet-3.0/dict/"));
+		File dictFiles = new File("./temp/WordNet-3.0/dict/");
+		//new URL("file", null, "./temp/WordNet-3.0/dict/")
+		this.dictionary = new Dictionary(dictFiles);
 		dictionary.open();
 		this.stemmer = new WordnetStemmer(this.dictionary);
+	}
+	
+	public void close() {
+		this.dictionary.close();
 	}
 
 	public List<Token> recognize(List<Token> tokens) {
@@ -46,7 +59,6 @@ public class ContentWordRecognizer implements IRecognizer {
 			if (token.getType() == TokenType.WORD) {
 				String word = token.getValue();
 				if(!StringUtils.isEmpty(word) && word != null){
-
 					// TODO: Change indexWord to stemmed word if available, and use .WORD instead of CONTENT_WORD
 					for (POS allowablePartOfSpeech : allowablePartsOfSpeech) {
 //						IIndexWord indexWord = dictionary.getIndexWord(word, allowablePartOfSpeech);
@@ -55,10 +67,15 @@ public class ContentWordRecognizer implements IRecognizer {
 //								System.out.println(dictionary.getWord(w).toString());
 //							}
 //						}
-						List<String> stems = this.stemmer.findStems(word, allowablePartOfSpeech);
-						if(!stems.isEmpty()){
-							outputToken.setValue(stems.get(0));
-							break;
+						try{
+							List<String> stems = this.stemmer.findStems(word, allowablePartOfSpeech);
+							if(!stems.isEmpty()){
+								outputToken.setValue(stems.get(0));
+								break;
+							}
+						}
+						catch (Exception e) {
+							System.out.println("stemmer broke on " + word);
 						}
 
 						//          if (indexWord != null) {

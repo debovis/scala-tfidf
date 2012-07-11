@@ -27,5 +27,15 @@
     	"collection" : "Sparcet",
     	"username": "",
         "password": ""
+    },
+    "sparcin": {
+    	"server": {
+    		"host": "localhost",
+    		"port":27017
+    	},
+    	"database": "sparcin",
+    	"collection" : "questions",
+    	"username": "",
+        "password": ""
     }
 }

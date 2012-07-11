@@ -1,7 +1,9 @@
 package com.sparcedge.analytics.indexers.matrix;
 
 import org.apache.commons.collections15.Transformer;
+import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 
 /**
  * Reduces the weight of words which are commonly found (ie in more
@@ -17,48 +19,72 @@ import org.apache.commons.math3.linear.RealMatrix;
  */
 public class IdfIndexer implements Transformer<RealMatrix,RealMatrix> {
 
-  public RealMatrix transform(RealMatrix matrix) {
-    // Phase 1: apply IDF weight to the raw word frequencies
-    int n = matrix.getColumnDimension();
-    for (int j = 0; j < matrix.getColumnDimension(); j++) {
-      for (int i = 0; i < matrix.getRowDimension(); i++) {
-        double matrixElement = matrix.getEntry(i, j);
-        if (matrixElement > 0.0D) {
-        	// get number of documents that contain this word
-          double dm = countDocsWithWord( matrix.getSubMatrix(i, i, 0, matrix.getColumnDimension() - 1));
-          matrix.setEntry(i, j, matrix.getEntry(i,j) * (1 + Math.log(n) - Math.log(dm)));
-        }
-      }
-    }
-    // Phase 2: normalize the word scores for a single document
-    for (int j = 0; j < matrix.getColumnDimension(); j++) {
-      double sum = sum(matrix.getSubMatrix(0, matrix.getRowDimension() -1, j, j));
-      for (int i = 0; i < matrix.getRowDimension(); i++) {
-        if (sum > 0.0D) {
-          matrix.setEntry(i, j, (matrix.getEntry(i, j) / sum));
-        } else {
-          matrix.setEntry(i, j, 0.0D);
-        }
-      }
-    }
-    return matrix;
-  }
+	public RealMatrix transform(RealMatrix matrix) {
+		RealVector wordFreq = corpusWordFreq(matrix);
+		// Phase 1: apply IDF weight to the raw word frequencies
+		int n = matrix.getColumnDimension();
+		for (int j = 0; j < matrix.getColumnDimension(); j++) {
+			for (int i = 0; i < matrix.getRowDimension(); i++) {
+				double matrixElement = matrix.getEntry(i, j);
+				if (matrixElement > 0.0D) {
+					// get number of documents that contain this word
+					double dm = wordFreq.getEntry(i);
+					// set matrix entry to f(m) = 1 + log(N/d(m))
+					matrix.setEntry(i, j, matrix.getEntry(i,j) * (1 + Math.log(n) - Math.log(dm)));
+				}
+			}
+		}
+		// Phase 2: normalize the word scores for a single document
+		for (int j = 0; j < matrix.getColumnDimension(); j++) {
+			double sum = sum(matrix.getSubMatrix(0, matrix.getRowDimension() -1, j, j));
+			for (int i = 0; i < matrix.getRowDimension(); i++) {
+				if (sum > 0.0D) {
+					matrix.setEntry(i, j, (matrix.getEntry(i, j) / sum));
+				} else {
+					matrix.setEntry(i, j, 0.0D);
+				}
+			}
+		}
+		return matrix;
+	}
 
-  private static double sum(RealMatrix colMatrix) {
-    double sum = 0.0D;
-    for (int i = 0; i < colMatrix.getRowDimension(); i++) {
-      sum += colMatrix.getEntry(i, 0);
-    }
-    return sum;
-  }
+	private static double sum(RealMatrix colMatrix) {
+		double sum = 0.0D;
+		for (int i = 0; i < colMatrix.getRowDimension(); i++) {
+			sum += colMatrix.getEntry(i, 0);
+		}
+		return sum;
+	}
 
-  private static double countDocsWithWord(RealMatrix rowMatrix) {
-    double numDocs = 0.0D;
-    for (int j = 0; j < rowMatrix.getColumnDimension(); j++) {
-      if (rowMatrix.getEntry(0, j) > 0.0D) {
-        numDocs++;
-      }
-    }
-    return numDocs;
-  }
+	@SuppressWarnings("unused")
+	private static double countDocsWithWord(RealMatrix rowMatrix) {
+		double numDocs = 0.0D;
+		for (int j = 0; j < rowMatrix.getColumnDimension(); j++) {
+			if (rowMatrix.getEntry(0, j) > 0.0D) {
+				numDocs++;
+			}
+		}
+		return numDocs;
+	}
+
+	public static RealVector corpusWordFreq(RealMatrix matrix){
+		// number of words, m x n matrix - words x docs
+		int m = matrix.getRowDimension();
+		int n = matrix.getColumnDimension();
+		RealVector countVector = new ArrayRealVector(m);
+		for (int i = 0; i < m; i++) {
+			RealVector freqs = matrix.getRowVector(i);
+			double numDocs = 0.0D;
+			for (int j = 0; j < n; j++) {
+				if (freqs.getEntry(j) > 0.0D) {
+					numDocs++;
+				}
+			}
+			countVector.setEntry(i, numDocs);
+		}
+		return countVector;
+	}
+
+
+
 }

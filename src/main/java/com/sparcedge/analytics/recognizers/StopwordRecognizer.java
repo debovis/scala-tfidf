@@ -41,6 +41,8 @@ public class StopwordRecognizer implements IRecognizer {
     this.stopwords.addAll(Arrays.asList(stopwords));
   }
   
+  public void close() {}
+  
   public void init() throws Exception {
     if (stopwords.size() == 0) {
       String[] stopwordArray = StringUtils.split(DEFAULT_STOPWORDS, " ");

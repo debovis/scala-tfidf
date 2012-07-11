@@ -47,4 +47,12 @@ public class RecognizerChain implements IRecognizer {
     }
     return recognizedTokens;
   }
+  /**
+   * Stub method to implement close on IDictionary in ContentWordRecongizer
+   */
+  public void close() {
+	  for (IRecognizer recognizer : recognizers) {
+	     recognizer.close();
+	    }
+  }
 }

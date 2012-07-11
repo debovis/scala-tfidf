@@ -30,8 +30,10 @@ import org.apache.commons.collections15.Bag;
 import org.apache.commons.collections15.bag.HashBag;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,13 +49,12 @@ public class TfGenerator {
 	private static Logger log = LoggerFactory.getLogger(TfGenerator.class);
 
 
-	public static RealMatrix generateMatrix(HashMap<String, String> documents) throws Exception {
+	public static RealMatrix generateMatrix(HashMap<String, String> documents) throws Exception{
 		// create needed variables
 		RealMatrix matrix;
 		Map<Integer,String> 	wordIdValueMap 				= new HashMap<Integer,String>();
 		Map<Integer,String> 	documentIdNameMap 			= new HashMap<Integer,String>();
 		Map<String,Bag<String>> documentWordFrequencyMap 	= new HashMap<String,Bag<String>>();
-		Bag<String>				words						= new HashBag<String>();
 		SortedSet<String> 		wordSet 					= new TreeSet<String>();
 		Integer 				docId = 0;
 
@@ -67,13 +68,6 @@ public class TfGenerator {
 			docId++;
 		}	
 		
-//		System.out.println();
-//		System.out.println(NERGenerator.generate(NERType.OpenNLP,documents));
-//		System.out.println();
-//		System.out.println(NERGenerator.generate(NERType.StanfordNLP,documents));
-//		System.out.println();
-//		System.out.println(words.uniqueSet());
-		
 		// create a Map of ids to words from the wordSet
 		int wordId = 0;
 		for (String word : wordSet) {
@@ -84,21 +78,33 @@ public class TfGenerator {
 		int numDocs = documents.keySet().size();
 		int numWords = wordSet.size();
 		matrix = new OpenMapRealMatrix(numWords, numDocs);
-		for (int i = 0; i < matrix.getRowDimension(); i++) {
-			for (int j = 0; j < matrix.getColumnDimension(); j++) {
+		for (int i = 0; i < numWords; i++) {
+			for (int j = 0; j < numDocs; j++) {
 				String docName = documentIdNameMap.get(j);
 				Bag<String> wordFrequencies = documentWordFrequencyMap.get(docName);
 				String word = wordIdValueMap.get(i);
 				int count = wordFrequencies.getCount(word);
-				if(count > 2) System.out.println(word + " " + count);
+				//if(count > 2) System.out.println(word + " " + count);
 				matrix.setEntry(i, j, count);
 			}
 		}
-		log.debug("created matrix with dimensions (" + matrix.getColumnDimension() + "," + matrix.getRowDimension() + ")");
+		log.debug("created matrix with dimensions (" + matrix.getRowDimension() + "," + matrix.getColumnDimension() + ")");
 		return matrix;
 	}
+	
+	public static Object[] getWordArray(HashMap<String,String> documents) throws Exception{
+		SortedSet<String> 		wordSet 					= new TreeSet<String>();
+		
+		for (String key : documents.keySet()) {
+			String text = getText(documents.get(key));			
+			Bag<String> wordFrequencies = getWordFrequencies(text);
+			wordSet.addAll(wordFrequencies.uniqueSet());
+		}
+		
+		return wordSet.toArray();
+	}
 
-	private static Bag<String> getWordFrequencies(String text) throws Exception {
+	public static Bag<String> getWordFrequencies(String text) throws Exception {
 		Bag<String> wordBag = new HashBag<String>();
 		WordTokenizer wordTokenizer = new WordTokenizer();
 		wordTokenizer.setText(text);
@@ -125,6 +131,7 @@ public class TfGenerator {
 				wordBag.add(StringUtils.lowerCase(recognizedToken.getValue()));
 			}
 		}
+		recognizerChain.close();
 		return wordBag;
 	}
 	
@@ -178,26 +185,22 @@ public class TfGenerator {
 			throw new Exception("document was invalid");
 		} else return text;
 	}
+	
+	public static RealVector corpusWordFreq(RealMatrix matrix){
+		// number of words, m x n matrix - words x docs
+		int m = matrix.getRowDimension();
+		int n = matrix.getColumnDimension();
+		RealVector countVector = new ArrayRealVector(m);
+		for (int i = 0; i < m; i++) {
+			RealVector freqs = matrix.getRowVector(i);
+			double numDocs = 0.0D;
+			for (int j = 0; j < n; j++) {
+				if (freqs.getEntry(j) > 0.0D) {
+					numDocs++;
+				}
+			}
+			countVector.setEntry(i, numDocs);
+		}
+		return countVector;
+	}
 }
-
-//public static String[] getDocumentNames() {
-//String[] documentNames = new String[documentIdNameMap.keySet().size()];
-//for (int i = 0; i < documentNames.length; i++) {
-//documentNames[i] = documentIdNameMap.get(i);
-//}
-//return documentNames;
-//}
-//
-//public String[] getWords() {
-//String[] words = new String[wordIdValueMap.keySet().size()];
-//for (int i = 0; i < words.length; i++) {
-//String word = wordIdValueMap.get(i);
-//if (word.contains("|||")) {
-//  // phrases are stored with length for other purposes, strip it off
-//  // for this report.
-//  word = word.substring(0, word.indexOf("|||"));
-//}
-//words[i] = word;
-//}
-//return words;
-//}

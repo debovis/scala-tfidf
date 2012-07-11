@@ -12,10 +12,16 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector
+import org.apache.commons.math3.linear.ArrayRealVector
+import org.apache.commons.collections15.Bag;
+import org.apache.commons.collections15.bag.HashBag;
 
 import com.sparcedge.analytics.indexers.matrix.TfGenerator
 import com.sparcedge.analytics.indexers.matrix.IdfIndexer
 import com.sparcedge.analytics.similarity.matrix.CosineSimilarity
+
+import com.sparcedge.analytics.similitarycollector._
 
 
 class SimilarityHandler extends Actor {
@@ -23,56 +29,89 @@ class SimilarityHandler extends Actor {
 	val log = LoggerFactory.getLogger(getClass)
   
 	def receive = {
-		case similarityRequest	(requestData, ctx) =>
+		case similarityRequest	(requestData, ctx,tfMatrix) =>
 		  
 		  try{
-		  
-			  val documents 			= new LinkedHashMap[String,String]
-			  val comparisonDocument 	= new LinkedHashMap[String,String]
-			  var comparisonDocumentTitle = new String
-			  val idfClass 				= new IdfIndexer()
-			  val cosineSim 			= new CosineSimilarity()
+			  val comp = (requestData.get \ "data" \ "document").extract[dataSet]
 			  
-			  // Extract documents and put into hashmap
-			  (requestData.get \ "data" \ "data_set").extract[List[dataSet]].foreach(d => documents.put(d.title, d.value) )
-			  
-			  // Comparision document
-			  val comp = (requestData.get \ "data" \ "comparison_document").extract[dataSet] 
-			  comparisonDocumentTitle = comp.title
-			  documents.put(comp.title, comp.value)
-			  comparisonDocument.put(comp.title, comp.value)
-			  
-			  // Generate TF matrix, IDF it, and how similar it is?
-			  val res:RealMatrix = TfGenerator.generateMatrix(documents)
-			  val idfRes:RealMatrix = idfClass.transform(res);
-			  val comparisonVect = idfRes.getColumnVector(idfRes.getColumnDimension()-1);
-			  var idfSubMatrix = idfRes.getSubMatrix(0,idfRes.getRowDimension()-1, 0, idfRes.getColumnDimension()-2);
-			  
-			  // Debug
-			  //System.out.println("before: " + idfRes.toString() + "\n after: " + idfSubMatrix.toString() + "\n comparison vect " + comparisonVect.toString());
-			 
-			  // remove comparision document from document hashmap, needed to to be in set for IDF and TFGeneration
-			  comparisonDocument.remove(comparisonDocumentTitle)
-			  var simList:List[similarityResult] = List()
-			  
-			  val keys = documents.keySet().toArray().toList
-			  val howSimilar = cosineSim.similarity(idfSubMatrix,comparisonVect).toArray().toList
-			  
-			  // zip lists to return
-			  keys.zip(howSimilar).foreach{x => 
-			    if(x._2.toDouble >0){
-			    	simList = new similarityResult(x._1.toString(), x._2.toDouble) :: simList
+			  val comparisonWordSet = TfGenerator.getWordFrequencies(comp.value)
+			  val comparisonWordKeySet = comparisonWordSet.uniqueSet()
+			  val comparisonVect = new ArrayRealVector(tfMatrix.words.size)
+
+			  var i=0
+			  for(word <- tfMatrix.words){
+			    if(comparisonWordKeySet.contains(word.toString())){
+			      val finalTfIdf = (tfMatrix.corpusWordOccurenceVect.getEntry(i)) * (1 + Math.log(tfMatrix.tfMatrix.getColumnDimension()) - Math.log(comparisonWordSet.getCount(word.toString())))
+			      // matrix.setEntry(i, j, matrix.getEntry(i,j) * (1 + Math.log(n) - Math.log(dm)));
+			      comparisonVect.setEntry(i,finalTfIdf)
 			    }
+			    i+=1
 			  }
-			  // Sort it
-			  simList = simList.sortWith(_.similarity > _.similarity)
 			  
-			  response(StatusCodes.OK, compact(render("similarity" -> simList.map {w => ("title" -> w.title) ~ ("similarity" -> w.similarity)})))
+			  val cosineSimilarity = new CosineSimilarity()
+			  ctx.complete(
+			      response(StatusCodes.OK,cosineSimilarity.similarity(tfMatrix.tfIdfMatrix,comparisonVect).toString())
+			      )
+			  
+			  
+//			  val comparisonDocument 	= new LinkedHashMap[String,String]
+//			  comparisonDocument.put(comp.title,comp.value)
+			  //val res:RealMatrix = TfGenerator.generateMatrix(comparisonDocument)
+			  
+			  //println("new generated matrix = " + res.getRowDimension() + " " + res.getColumnDimension())
+			  
+			  
+			  
+		  
+//			  val documents 			= new LinkedHashMap[String,String]
+//			  var comparisonDocumentTitle = new String
+//			  val idfClass 				= new IdfIndexer()
+//			  val cosineSim 			= new CosineSimilarity()
+//			  
+//			  // Extract documents and put into hashmap
+//			  (requestData.get \ "data" \ "data_set").extract[List[dataSet]].foreach(d => documents.put(d.title, d.value) )
+//			  
+//			  
+//			  comparisonDocumentTitle = comp.title
+//			  documents.put(comp.title, comp.value)
+//			  comparisonDocument.put(comp.title, comp.value)
+//			  
+//			  // Generate TF matrix, IDF it, and how similar it is?
+//			  //val res:RealMatrix = TfGenerator.generateMatrix(documents)
+//			  val idfRes:RealMatrix = idfClass.transform(res);
+//			  val comparisonVect = idfRes.getColumnVector(idfRes.getColumnDimension()-1);
+//			  var idfSubMatrix = idfRes.getSubMatrix(0,idfRes.getRowDimension()-1, 0, idfRes.getColumnDimension()-2);
+//			  
+//			  // Debug
+//			  //System.out.println("before: " + idfRes.toString() + "\n after: " + idfSubMatrix.toString() + "\n comparison vect " + comparisonVect.toString());
+//			 
+//			  // remove comparision document from document hashmap, needed to to be in set for IDF and TFGeneration
+//			  comparisonDocument.remove(comparisonDocumentTitle)
+//			  var simList:List[similarityResult] = List()
+//			  
+//			  val keys = documents.keySet().toArray().toList
+//			  val howSimilar = cosineSim.similarity(idfSubMatrix,comparisonVect).toArray().toList
+//			  
+//			  // zip lists to return
+//			  keys.zip(howSimilar).foreach{x => 
+//			    if(x._2.toDouble >0){
+//			    	simList = new similarityResult(x._1.toString(), x._2.toDouble) :: simList
+//			    }
+//			  }
+//			  // Sort it
+//			  simList = simList.sortWith(_.similarity > _.similarity)
+//			  
+//			  ctx.complete(
+//			      response(StatusCodes.OK, compact(render("similarity" -> simList.map {w => ("title" -> w.title) ~ ("similarity" -> w.similarity)})))
+//			      )
+			  //ctx.complete(response(StatusCodes.OK,"help me please"))
 			  
 		  } catch {
 		    		case e:Exception => 
 		    		  	println(e.toString())
-		    		  	response(StatusCodes.OK, compact(render("similarity" -> e.toString())))
+		    		  	ctx.complete(
+		    		  	    response(StatusCodes.OK, compact(render("similarity" -> e.toString())))
+		    		  	   )
 		  }
 		case _ =>
 	}
@@ -96,5 +135,5 @@ class similarityResult(
 		val similarity : Double
 )
 
-case class similarityRequest(requestData:Some[net.liftweb.json.JsonAST.JValue], ctx: RequestContext)
+case class similarityRequest(requestData:Some[net.liftweb.json.JsonAST.JValue], ctx: RequestContext, tfMatrix:cachedTF)
 

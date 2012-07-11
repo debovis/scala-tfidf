@@ -12,7 +12,14 @@ import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import scala.collection.mutable.Map
 
+import com.sparcedge.analytics.similitarycollector._
+
 trait AnalyticsService extends Directives {
+  
+	val coll = new collectionCollector
+	var questions = coll.getQuestions
+	
+	val tf = new cachedTF(questions)
 
 	val analyticsService = {
 		path("fibs" / IntNumber) { num =>
@@ -23,7 +30,8 @@ trait AnalyticsService extends Directives {
 		}~
 		path("ping") {
       		content(as[Option[String]]) { body =>
-        		completeWith("PONG! " + body.getOrElse(""))
+        		//completeWith("PONG! " + body.getOrElse(""))
+        		completeWith("size " + tf.words.size.toString)
       		}
     	}~
     	path("pong") {
@@ -33,14 +41,9 @@ trait AnalyticsService extends Directives {
       		  ctx.request.headers.foreach(x => 
       		    headers+=(x.name -> x.value)
       		    )
-      			ctx.complete(
-	      			HttpResponse (
-						status = StatusCodes.OK,
-						headers = List(HttpHeader("Connection", "Keep-Alive")),
-						content = HttpContent(
-								`application/json`,
-								compact(render("headers" -> content.as[String].right.getOrElse(headers("user-agent"))) )
-						)))
+      		    ctx.complete(
+      		    		response(StatusCodes.OK,compact(render("headers" -> content.as[String].right.getOrElse(headers("user-agent"))) ))
+      		    	)
       		}
     	}~
     	path("similarity") { 
@@ -50,22 +53,16 @@ trait AnalyticsService extends Directives {
 			  try{
 			    val requestData = Some(parse(data))
 			    val SimActor = Actor.actorOf[SimilarityHandler].start
-				SimActor ! similarityRequest(requestData, ctx)
+				SimActor ! similarityRequest(requestData, ctx, tf)
 				
 				
 			  }
 			  catch{
 			    case e:net.liftweb.json.JsonParser.ParseException => 
 			      println(e)
-			      
 			      ctx.complete(
-			    		HttpResponse (
-							status = StatusCodes.BadRequest,
-							headers = Nil,
-							content = HttpContent(
-									`application/json`,
-									compact(render("error" -> "Problem parsing dataset")) )
-						))
+			    		  response(StatusCodes.BadRequest,compact(render("error" -> "Problem parsing dataset")))
+			    		  )
 			  }
 			  }
 			}
@@ -80,15 +77,9 @@ trait AnalyticsService extends Directives {
 		    }
 		    catch{
 		      case e:Exception => 
-
 		        ctx.complete(
-		        HttpResponse (
-							status = StatusCodes.BadRequest,
-							headers = Nil,
-							content = HttpContent(
-									`application/json`,
-									compact(render("error" -> "Having a bad day?")) )
-						))
+		            response(StatusCodes.BadRequest,compact(render("error" -> "Having a bad day?")))
+		         )
 		    }}
 		  }
 		}~
@@ -97,7 +88,6 @@ trait AnalyticsService extends Directives {
 		    val data = ctx.request.content.as[String].right.get toString
 			  
 			  try{
-			    
 			    // Is it JSON?
 			    val requestData = Some(parse(data))
 			    val NERActor = Actor.actorOf[NERHandler].start
@@ -108,23 +98,22 @@ trait AnalyticsService extends Directives {
 			  catch{
 			    case e:net.liftweb.json.JsonParser.ParseException => 
 			      println(e)
-			      
 			      ctx.complete(
-			    		HttpResponse (
-							status = StatusCodes.BadRequest,
-							headers = Nil,
-							content = HttpContent(
-									`application/json`,
-									compact(render("error" -> "Problem parsing dataset")) )
-						))
+			          response(StatusCodes.BadRequest,compact(render("error" -> "Problem parsing dataset")))
+			      )
 			  }
-		    
-		    
 		    }
-		    
 		  }
 		}
-	}	
+	}
+	def response(status:StatusCode, jsonResponse: String): HttpResponse = {
+			HttpResponse (
+								status = status,
+								headers = Nil,
+								content = HttpContent(
+										`application/json`,jsonResponse
+						))
+		}
 }
 
 
