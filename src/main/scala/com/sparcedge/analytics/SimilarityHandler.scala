@@ -49,8 +49,21 @@ class SimilarityHandler extends Actor {
 			  }
 			  
 			  val cosineSimilarity = new CosineSimilarity()
+			  val similarityVect = cosineSimilarity.similarity(tfMatrix.tfIdfMatrix,comparisonVect).toArray().toList
+			  val keys = tfMatrix.documents.keySet().toArray().toList
+			  var simList:List[similarityResult] = List()
+			  
+			  // zip lists to return
+			  keys.zip(similarityVect).foreach{x => 
+			    if(x._2.toDouble >0){
+			    	simList = new similarityResult(x._1.toString(), x._2.toDouble,tfMatrix.documents.get(x._1.toString())) :: simList
+			    }
+			  }
+			  // Sort it
+			  simList = simList.sortWith(_.similarity > _.similarity)
+			  
 			  ctx.complete(
-			      response(StatusCodes.OK,cosineSimilarity.similarity(tfMatrix.tfIdfMatrix,comparisonVect).toString())
+			      response(StatusCodes.OK, compact(render("similarity" -> simList.map {w => ("title" -> w.title) ~ ("similarityScore" -> w.similarity) ~ ("document" -> w.document)})))
 			      )
 			  
 			  
@@ -132,7 +145,8 @@ class dataSet(
 
 class similarityResult(
 		val title: String,
-		val similarity : Double
+		val similarity : Double,
+		val document : String
 )
 
 case class similarityRequest(requestData:Some[net.liftweb.json.JsonAST.JValue], ctx: RequestContext, tfMatrix:cachedTF)
