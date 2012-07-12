@@ -22,7 +22,7 @@ class collectionCollector {
   def getQuestions = {
     
 	val questions 	= new LinkedHashMap[String,String]
-	val questionLimit = 1000
+	val questionLimit = 1020
     
 	  val connection = new MongoCollectionWrapper("sparcin")
 	  val collection = connection.getCollection  
