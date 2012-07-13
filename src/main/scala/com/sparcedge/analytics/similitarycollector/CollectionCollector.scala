@@ -59,3 +59,10 @@ class cachedTF (var documents:LinkedHashMap[String,String]){
   
 }
 
+
+
+
+
+
+
+

@@ -11,11 +11,8 @@ import org.apache.commons.lang.StringUtils;
 import com.sparcedge.analytics.tokenizers.Token;
 import com.sparcedge.analytics.tokenizers.TokenType;
 
-import edu.mit.jwi.CachingDictionary;
 import edu.mit.jwi.Dictionary;
 import edu.mit.jwi.IDictionary;
-import edu.mit.jwi.item.IIndexWord;
-import edu.mit.jwi.item.IWordID;
 import edu.mit.jwi.item.POS;
 import edu.mit.jwi.morph.WordnetStemmer;
 
@@ -85,8 +82,11 @@ public class ContentWordRecognizer implements IRecognizer {
 						//          }
 					}
 				}
+				outputTokens.add(outputToken);
 			}
-			outputTokens.add(outputToken);
+//			else if (outputToken.getType()!= TokenType.WHITESPACE && outputToken.getType()!= TokenType.STOP_WORD) 
+//				System.out.println(String.format(" word - %s, tokentype - %s", outputToken.getType(), outputToken.getValue()));
+			
 		}
 		return outputTokens;
 	}

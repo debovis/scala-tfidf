@@ -100,7 +100,6 @@ public class TfGenerator {
 			Bag<String> wordFrequencies = getWordFrequencies(text);
 			wordSet.addAll(wordFrequencies.uniqueSet());
 		}
-		
 		return wordSet.toArray();
 	}
 
