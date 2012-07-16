@@ -13,13 +13,14 @@ import net.liftweb.json.JsonDSL._
 import scala.collection.mutable.Map
 
 import com.sparcedge.analytics.similitarycollector._
+import com.sparcedge.analytics.indexers.matrix.TfIdfGenerator
 
 trait AnalyticsService extends Directives {
   
 	val coll = new collectionCollector
 	var questions = coll.getQuestions
 	
-	val tf = new cachedTF(questions)
+	val tf = new TfIdfGenerator(questions)
 
 	val analyticsService = {
 		path("fibs" / IntNumber) { num =>
@@ -31,7 +32,7 @@ trait AnalyticsService extends Directives {
 		path("ping") {
       		content(as[Option[String]]) { body =>
         		//completeWith("PONG! " + body.getOrElse(""))
-        		completeWith("size " + tf.words.size.toString)
+        		completeWith("size " + tf.wordSet.size().toString)
       		}
     	}~
     	path("pong") {

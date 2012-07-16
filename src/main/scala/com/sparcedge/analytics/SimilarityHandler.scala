@@ -17,9 +17,10 @@ import org.apache.commons.math3.linear.ArrayRealVector
 import org.apache.commons.collections15.Bag;
 import org.apache.commons.collections15.bag.HashBag;
 
-import com.sparcedge.analytics.indexers.matrix.TfGenerator
-import com.sparcedge.analytics.indexers.matrix.IdfIndexer
+import com.sparcedge.analytics.indexers.matrix.WordFrequencyWrapper
+import com.sparcedge.analytics.indexers.matrix.WordFrequencyWrapper._
 import com.sparcedge.analytics.similarity.matrix.CosineSimilarity
+import com.sparcedge.analytics.indexers.matrix.TfIdfGenerator
 
 import com.sparcedge.analytics.similitarycollector._
 
@@ -30,19 +31,20 @@ class SimilarityHandler extends Actor {
   
 	def receive = {
 		case similarityRequest	(requestData, ctx,tfMatrix) =>
+		  val minimumSimilarityQualifier = .3
 		  
 		  try{
 			  val comp = (requestData.get \ "data" \ "document").extract[dataSet]
-			  
-			  val comparisonWordSet = TfGenerator.getWordFrequencies(comp.value)
+			  val corpusWords = tfMatrix.wordSet.toArray().toList
+			  val comparisonWordSet = WordFrequencyWrapper.getWordFrequencies(FrequencyType.WORDNET, comp.value)
 			  val comparisonWordKeySet = comparisonWordSet.uniqueSet()
-			  val comparisonVect = new ArrayRealVector(tfMatrix.words.size)
+			  val comparisonVect = new ArrayRealVector(tfMatrix.wordSet.size())
 
 			  var i=0
-			  for(word <- tfMatrix.words){
+			  for(word <- corpusWords){
 			    if(comparisonWordKeySet.contains(word.toString())){
-			      var corpusWordFreq = tfMatrix.corpusWordOccurenceVect.getEntry(i)
-			      val documentsCount = tfMatrix.tfMatrix.getColumnDimension()
+			      var corpusWordFreq = tfMatrix.corpusWordFrequency.getEntry(i)
+			      val documentsCount = tfMatrix.tfmatrix.getColumnDimension()
 			      val comparisonWordCount = comparisonWordSet.getCount(word.toString())
 			      val finalTfIdf = (comparisonWordCount) * (1 + Math.log(documentsCount) - Math.log(corpusWordFreq))
 			      comparisonVect.setEntry(i,finalTfIdf)
@@ -50,27 +52,27 @@ class SimilarityHandler extends Actor {
 			    i+=1
 			  }
 
-			  val cosineSimilarity = new CosineSimilarity()
-			  val similarityVect = cosineSimilarity.similarity(tfMatrix.tfIdfMatrix,comparisonVect).toArray().toList
+			  val similarityVect = new CosineSimilarity().similarity(tfMatrix.tfidfMatrix,comparisonVect).toArray().toList
 			  val keys = tfMatrix.documents.keySet().toArray().toList
 			  var simList:List[similarityResult] = List()
 			  
 			  // zip lists to return
 			  keys.zip(similarityVect).foreach{x => 
-			    if(x._2.toDouble >0.3){
-			    	simList = new similarityResult(x._1.toString(), x._2.toDouble,tfMatrix.documents.get(x._1.toString())) :: simList
+			    if(x._2.toDouble >minimumSimilarityQualifier){
+			    	val simScore = Math.round(x._2.toDouble * 10000).toDouble/10000
+			    	simList = new similarityResult(x._1.toString(), simScore,tfMatrix.documents.get(x._1.toString())) :: simList
 			    }
 			  }
 			  // Sort it
 			  simList = simList.sortWith(_.similarity > _.similarity)
 			  
 			  ctx.complete(
-			      response(StatusCodes.OK, compact(render("similarity" -> simList.map {w => ("title" -> w.title) ~ ("similarityScore" -> w.similarity) ~ ("document" -> w.document)})))
+			      response(StatusCodes.OK, compact(render("similarity" -> simList.map {w => ("id" -> w.id) ~ ("similarityScore" -> w.similarity) ~ ("document" -> w.document)})))
 			      )
 			  
 		  } catch {
 		    		case e:Exception => 
-		    		  	println(e.toString())
+		    		  	println(e.printStackTrace())
 		    		  	ctx.complete(
 		    		  	    response(StatusCodes.OK, compact(render("similarity" -> e.toString())))
 		    		  	   )
@@ -93,10 +95,10 @@ class dataSet(
 )
 
 class similarityResult(
-		val title: String,
+		val id: String,
 		val similarity : Double,
 		val document : String
 )
 
-case class similarityRequest(requestData:Some[net.liftweb.json.JsonAST.JValue], ctx: RequestContext, tfMatrix:cachedTF)
+case class similarityRequest(requestData:Some[net.liftweb.json.JsonAST.JValue], ctx: RequestContext, tf:TfIdfGenerator)
 

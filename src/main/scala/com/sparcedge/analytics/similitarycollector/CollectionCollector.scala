@@ -8,7 +8,7 @@ import com.mongodb.casbah.Imports.{MongoDBObject,ObjectId,BasicDBList}
 import java.util.LinkedHashMap
 
 import com.sparcedge.analytics.mongodb.MongoCollectionWrapper
-import com.sparcedge.analytics.indexers.matrix.TfGenerator
+import com.sparcedge.analytics.indexers.matrix.TfIdfGenerator
 import com.sparcedge.analytics.indexers.matrix.IdfIndexer
 import com.sparcedge.analytics.similarity.matrix.CosineSimilarity
 
@@ -49,16 +49,6 @@ class collectionCollector {
 }
 
 case class sparcinQuestions(id: Integer, question: String, category: List[String])
-
-class cachedTF (var documents:LinkedHashMap[String,String]){
-  
-  var tfMatrix:RealMatrix 		= TfGenerator.generateMatrix(documents)
-  var tfIdfMatrix:RealMatrix 	= new IdfIndexer().transform(tfMatrix)
-  var words			 			= TfGenerator.getWordArray(documents).toList
-  var corpusWordOccurenceVect:RealVector = TfGenerator.corpusWordFreq(tfMatrix)
-  
-}
-
 
 
 

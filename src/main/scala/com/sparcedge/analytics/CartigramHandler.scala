@@ -30,7 +30,7 @@ import org.apache.lucene.analysis.shingle.ShingleAnalyzerWrapper
 import org.apache.lucene.analysis.tokenattributes._
 
 import com.sparcedge.analytics.mongodb.MongoCollectionWrapper
-import com.sparcedge.analytics.indexers.matrix.TfGenerator
+import com.sparcedge.analytics.indexers.matrix.TfIdfGenerator
 import com.sparcedge.analytics.indexers.matrix.IdfIndexer
 import com.sparcedge.analytics.similarity.matrix.CosineSimilarity
 import com.sparcedge.analytics.tokenizers.NGramAnalyzer
@@ -119,7 +119,7 @@ class CartigramHandler extends Actor{
 //		  	println(s)
 //			println(nameFinder.findNamedEntities(s).toArray().foreach(x => println(x.toString())))
 //		}
-		val res = TfGenerator.generateMatrix(sparcetMap)
+		val res = new TfIdfGenerator(sparcetMap)
 //		val idfRes = idfClass.transform(res);
 //		val comparisonVect = idfRes.getColumnVector(idfRes.getColumnDimension()-1);
 //		var idfSubMatrix = idfRes.getSubMatrix(0,idfRes.getRowDimension()-1, 0, idfRes.getColumnDimension()-2);

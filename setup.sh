@@ -11,3 +11,4 @@ mv ./WordNet-3.0/ $dir/temp
 #( cd $dir/temp/WordNet-3.0; ./configure --prefix=/usr/local --with-tk=/usr/lib/tk8.5 --with-tcl=/usr/lib/tcl8.5)
 ( cd $dir/temp/WordNet-3.0; make)
 ( cd $dir/temp/WordNet-3.0; make install)
+mongorestore -d sparcin -c questions ./dump/sparcin/questions.bson
