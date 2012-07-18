@@ -1,0 +1,45 @@
+
+.container {
+    padding-top: 20px;
+}
+
+input.question {
+    font: 18px Georgia, 'Times New Roman', serif;
+    width: 100%;
+    padding: 20px 10px;
+}
+
+.logo {
+}
+
+h3.similarity {
+    text-transform: uppercase;
+    margin: 0 0 0 10px;
+    font-size: 18px;
+    margin-bottom: 30px;
+}
+
+.footer {
+    border-top: 1px solid #e5e5e5;
+    font-size: 11px;
+    padding-top: 3px;
+    text-align: right;
+}
+
+.tablesorter-headerSortDown {
+    background: #ddd;
+}
+
+
+.response {
+    padding: 20px 0;
+    font-size: 16px;
+}
+
+.response-warning {
+    color: #ba8622;
+}
+
+.response-error {
+    color: #901010;
+}

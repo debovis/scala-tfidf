@@ -1,0 +1,100 @@
+<html>
+<head>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script language="javascript" type="text/javascript" src="https://raw.github.com/Mottie/tablesorter/master/js/jquery.tablesorter.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
+<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+	<div id="loading"></div><div id="progressbar"></div>
+	<div id="submitted_question">
+		<form id="question_form" action="#">
+		  Question: <input type="text" name="question" size="700"/><br />
+		  <input type="submit" value="Submit" />
+		</form>
+	</div>
+	<div id="comparisonDocument"></div>
+	<div id="data"></div>  
+
+<script>
+
+var main = {
+	getSimiarityData : function(question, cb) {
+		$("#data").html('');
+		$.ajax({
+			url: "/similarity",
+			type: "POST",
+			contentType: "application/json",
+			dataType: "json",
+			data: JSON.stringify(question),
+			success: function(response){
+				var globalData = {};
+				var items = response.similarity;
+				// add questions
+				if(items.length){
+					for(var j=0;j<items.length;j++){
+						var item = items[j]
+						globalData[item.id] = {'question':item.document, "simScore" : item.similarityScore}
+					}
+					var $table = $('#data'),
+						$compdoc = $('#comparisonDocument'),
+						items = globalData,
+						firstHeader = 'ID',
+						secondHeader = 'Question',
+						thirdHeader = 'Similarity',
+						tableHTML = '<table dir="ltr" width="800" border="1" class="tablesorter" id="myTable" summary="purpose/structure for speech output">'+
+		                        //"<caption>This table lets us see the data in a tabular format.</caption>"+
+		                        '<colgroup width="20%" />'+
+		                        '<colgroup id="colgroup" class="colgroup" align="center" valign="middle" title="title" width="1*" span="3" style="background:#ddd;" />'+
+		                        '<thead> <tr>  <th>'+firstHeader+'</th> <th>'+secondHeader+'</th><th>'+thirdHeader+'</th> </tr> </thead><tbody>';
+			        for(var key in globalData){
+			            var title = key;
+			            var value = globalData[key].question;
+			            var sim = globalData[key].simScore ? globalData[key].simScore : 0;
+			            if(sim){
+			            	sim = Math.round(sim*100);
+			            }
+			            tableHTML += '<tr><td>'+ title+'</td><td>'+ value +'</td><td>'+sim+'%</td></tr>'
+		        	}
+
+		        	tableHTML += '</tbody></table>';
+		        	$table.append(tableHTML);
+
+		        	// add compdoc
+		        	$compdoc.html("Question asked: "  + question.data.document.value);
+
+		        	cb();
+	        	}
+	        	else {
+	        		$("#loading").text('Data failed to load');
+	        	}
+			},
+			error: function(response){
+				$('#data').text(response);
+				$("#loading").text('Data failed to load');
+			}
+		})
+},
+	addTableSorter : function(){
+		$('#myTable').tablesorter( {sortList: [[2,1]]});
+	}
+};
+
+$(document).ready(function() {
+	$("form").submit(function(){
+		var question = $("input:first").val();
+		if(!question.length){
+			alert("please enter question");
+			return false;
+		}
+		else {
+// curl -d '{"data": {"document": {"title":"doc2", "value":"What is the difference between a public property and a public variable?"}}}' 
+			main.getSimiarityData({"data":{"document":{"title": "doc", "value": question}}},main.addTableSorter);
+			return false;
+		}
+	})	  
+});
+
+</script>
+</body>
+</html>

@@ -18,13 +18,18 @@ import com.sparcedge.analytics.indexers.matrix.TfIdfGenerator
 
 trait AnalyticsService extends Directives {
   
+	val demoHtml = Source.fromURL(getClass.getResource("/similarityDemo.html")).mkString
 	val coll = new collectionCollector
 	var questions = coll.getQuestions
-	
 	val tf = new TfIdfGenerator(questions)
-	val demoHtml = Source.fromURL(getClass.getResource("/similarity.html")).mkString
+	
 
 	val analyticsService = {
+		pathPrefix("static") {
+		  cache {
+		  	getFromResourceDirectory("static")
+		  }
+	  	}~
 		path("fibs" / IntNumber) { num =>
 			get { ctx: RequestContext =>
 				val fibActor = Actor.actorOf[FibonacciHandler].start
@@ -56,8 +61,7 @@ trait AnalyticsService extends Directives {
 			  try{
 			    val requestData = Some(parse(data))
 			    val SimActor = Actor.actorOf[SimilarityHandler].start
-				SimActor ! similarityRequest(requestData, ctx, tf)
-				
+				SimActor ! similarityRequest(requestData, ctx, tf)			
 				
 			  }
 			  catch{

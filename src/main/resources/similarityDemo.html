@@ -5,17 +5,28 @@
 <script language="javascript" type="text/javascript" src="https://raw.github.com/Mottie/tablesorter/master/js/jquery.tablesorter.js"></script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
 <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+<link href="/static/sparc-bootstrap.css" rel="stylesheet" type="text/css" />
+<link href="/static/styles.css" rel="stylesheet" type="text/css" />
 </head>
-<body>
-	<div id="loading"></div><div id="progressbar"></div>
-	<div id="submitted_question">
-		<form id="question_form" action="#">
-		  Question: <input type="text" name="question" size="700"/><br />
-		  <input type="submit" value="Submit" />
-		</form>
+<body class="darkNav">
+
+	<div class="container">
+
+		<img src="/static/sparciq-logo.png" class="logo" alt="SPARCIQ" />
+		<h3 class="similarity">Similarity API</h3>
+
+		<input id="question" class="question" type="text" name="question" value="Ask your question here." />
+
+		<div id="data"></div>
+
+		<div class="footer">
+	    	<p>Copyright &copy; SPARC, LLC. All Rights Reserved.</p>
+	    </div>
 	</div>
-	<div id="comparisonDocument"></div>
-	<div id="data"></div>  
+
+
+
+</div>
 
 <script>
 
@@ -23,14 +34,28 @@ var main = {
 	getSimiarityData : function(question, cb) {
 		$("#data").html('');
 		$.ajax({
-			url: "/similarity",
+			url: "similarity",
 			type: "POST",
 			contentType: "application/json",
 			dataType: "json",
 			data: JSON.stringify(question),
 			success: function(response){
+				$('#data').empty();
+
 				var globalData = {};
 				var items = response.similarity;
+
+				if (typeof items === 'string') {
+					$('#data')
+	        			.empty()
+	        			.append(
+	        				$('<p />')
+	        					.addClass('response response-warning')
+	        					.html('No responses for your question.')
+	        			);
+
+					return;
+				}
 				// add questions
 				if(items.length){
 					for(var j= items.length;j--;){
@@ -43,10 +68,9 @@ var main = {
 						firstHeader = 'ID',
 						secondHeader = 'Question',
 						thirdHeader = 'Similarity',
-						tableHTML = '<table dir="ltr" width="800" border="1" class="tablesorter" id="myTable" summary="purpose/structure for speech output">'+
-		                        //"<caption>This table lets us see the data in a tabular format.</caption>"+
+						tableHTML = '<table dir="ltr" class="tablesorter table table-striped table-bordered" id="myTable" summary="purpose/structure for speech output">'+
 		                        '<colgroup width="20%" />'+
-		                        '<colgroup id="colgroup" class="colgroup" align="center" valign="middle" title="title" width="1*" span="3" style="background:#ddd;" />'+
+		                        '<colgroup id="colgroup" class="" title="title" span="3" />'+
 		                        '<thead> <tr>  <th>'+firstHeader+'</th> <th>'+secondHeader+'</th><th>'+thirdHeader+'</th> </tr> </thead><tbody>';
 			        for(var key in globalData){
 			            var title = key;
@@ -67,33 +91,60 @@ var main = {
 		        	cb();
 	        	}
 	        	else {
-	        		$("#loading").text('Data failed to load');
+	        		$('#data')
+	        			.empty()
+	        			.append(
+	        				$('<p />')
+	        					.addClass('response response-error')
+	        					.html('Error loading data.')
+	        			);
+
 	        	}
 			},
 			error: function(response){
-				$('#data').text(response);
-				$("#loading").text('Data failed to load');
+				$('#data')
+	        			.empty()
+	        			.append(
+	        				$('<p />')
+	        					.addClass('response response-error')
+	        					.html('Error loading data.')
+	        			);
 			}
 		})
 },
 	addTableSorter : function(){
-		$('#myTable').tablesorter();
+		$('#myTable').tablesorter({sortList: [[2,1]]});
 	}
 };
 
-$(document).ready(function() {
-	$("form").submit(function(){
-		var question = $("input:first").val();
-		if(!question.length){
-			alert("please enter question");
-			return false;
-		}
-		else {
-// curl -d '{"data": {"document": {"title":"doc2", "value":"What is the difference between a public property and a public variable?"}}}' 
-			main.getSimiarityData({"data":{"document":{"title": "doc", "value": question}}},main.addTableSorter);
-			return false;
-		}
-	})	  
+
+
+$(function() {
+	var defaultText = 'Ask the wise one.';
+
+	$('#question')
+		.val(defaultText)
+		.live('click', function() {
+			var question = $(this).val();
+
+			if (question === defaultText) {
+				$(this).val('');
+			}
+		})
+		.live('change', function() {
+			var question = $(this).val();
+
+			if (question !== '')
+				if(!question.length){
+					alert("please enter question");
+					return false;
+				}
+				else {
+					main.getSimiarityData({"data":{"document":{"title": "doc", "value": question}}},main.addTableSorter);
+					return false;
+				}
+		});
+
 });
 
 </script>
