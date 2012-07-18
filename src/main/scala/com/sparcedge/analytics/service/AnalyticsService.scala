@@ -11,6 +11,7 @@ import akka.actor.{PoisonPill, Actor, Scheduler, ActorRef}
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import scala.collection.mutable.Map
+import scala.io.Source
 
 import com.sparcedge.analytics.similitarycollector._
 import com.sparcedge.analytics.indexers.matrix.TfIdfGenerator
@@ -21,6 +22,7 @@ trait AnalyticsService extends Directives {
 	var questions = coll.getQuestions
 	
 	val tf = new TfIdfGenerator(questions)
+	val demoHtml = Source.fromURL(getClass.getResource("/similarity.html")).mkString
 
 	val analyticsService = {
 		path("fibs" / IntNumber) { num =>
@@ -67,6 +69,13 @@ trait AnalyticsService extends Directives {
 			  }
 			  }
 			}
+		}~
+		path("similarityDemo") {
+		  get { ctx: RequestContext =>
+		  	ctx.complete(
+		  	    HttpResponse(status = StatusCodes.OK,headers = Nil,content = HttpContent(`text/html`,demoHtml))
+		  	    )
+		  }
 		}~
 		path("cartigram") {
 		  get { jsonpWithParameter("callback") { ctx: RequestContext =>
