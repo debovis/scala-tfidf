@@ -16,16 +16,16 @@ class MongoCollectionWrapper(item:String) {
 	val collName = mongoStoreConfig.collection
 
 	def getCollection: MongoCollection = {
-	    val mongo = MongoConnection(mongoStoreConfig.server, mongoStoreConfig.port)
-	    if(!StringUtils.isEmpty(mongoStoreConfig.username) && !StringUtils.isEmpty(mongoStoreConfig.password)){
-		    if(mongo.getDB(dbName).authenticate(mongoStoreConfig.username, mongoStoreConfig.password)){
-		    	println("username - password auth used, connection established")
-		    }
-	    }
-	    mongo(dbName)(collName)
+		val mongo = MongoConnection(mongoStoreConfig.server, mongoStoreConfig.port)
+		if(!StringUtils.isEmpty(mongoStoreConfig.username) && !StringUtils.isEmpty(mongoStoreConfig.password)){
+			if(mongo.getDB(dbName).authenticate(mongoStoreConfig.username, mongoStoreConfig.password)){
+				println("username - password auth used, connection established")
+			}
+		}
+		mongo(dbName)(collName)
 	}
 	def getConnection: MongoConnection = {
-	  MongoConnection(mongoStoreConfig.server,mongoStoreConfig.port)
+		MongoConnection(mongoStoreConfig.server,mongoStoreConfig.port)
 	}
 }
 
@@ -41,7 +41,7 @@ class MongoDBStore (
 object MongoDBStore {
 	
 	def apply(item:String): MongoDBStore = {
-	  	val mongoEntry = parse(scala.io.Source.fromFile("analytics-engine-config.json").mkString) \ item
+		val mongoEntry = parse(scala.io.Source.fromFile("analytics-engine-config.json").mkString) \ item
 		val host = JsonHelper.toString(mongoEntry \ "server" \ "host")
 		val port = JsonHelper.toInt(mongoEntry \ "server" \ "port")
 		val dbName = JsonHelper.toString(mongoEntry \ "database")

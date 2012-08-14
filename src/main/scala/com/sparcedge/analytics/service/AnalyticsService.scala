@@ -23,111 +23,102 @@ trait AnalyticsService extends Directives {
 	var questions = coll.getQuestions
 	val tf = new TfIdfGenerator(questions)
 	
-
 	val analyticsService = {
 		pathPrefix("static") {
-		  cache {
-		  	getFromResourceDirectory("static")
-		  }
-	  	}~
+			cache {
+				getFromResourceDirectory("static")
+			}
+		} ~
 		path("fibs" / IntNumber) { num =>
 			get { ctx: RequestContext =>
 				val fibActor = Actor.actorOf[FibonacciHandler].start
 				fibActor ! FibonacciRequest(num, ctx)
 			}
-		}~
+		} ~
 		path("ping") {
-      		content(as[Option[String]]) { body =>
-        		//completeWith("PONG! " + body.getOrElse(""))
-        		completeWith("size " + tf.wordSet.size().toString)
-      		}
-    	}~
-    	path("pong") {
-      		(get | post) { ctx:RequestContext => 
-      		  val content = ctx.request.content
-      		  val headers = Map[String, String]()
-      		  ctx.request.headers.foreach(x => 
-      		    headers+=(x.name -> x.value)
-      		    )
-      		    ctx.complete(
-      		    		response(StatusCodes.OK,compact(render("headers" -> content.as[String].right.getOrElse(headers("user-agent"))) ))
-      		    	)
-      		}
-    	}~
-    	path("similarity") { 
-			post { jsonpWithParameter("callback") { ctx: RequestContext =>
-			  val data = ctx.request.content.as[String].right.get toString
-			  
-			  try{
-			    val requestData = Some(parse(data))
-			    val SimActor = Actor.actorOf[SimilarityHandler].start
-				SimActor ! similarityRequest(requestData, ctx, tf)			
-				
-			  }
-			  catch{
-			    case e:net.liftweb.json.JsonParser.ParseException => 
-			      println(e)
-			      ctx.complete(
-			    		  response(StatusCodes.BadRequest,compact(render("error" -> "Problem parsing dataset")))
-			    		  )
-			  }
-			  }
+			content(as[Option[String]]) { body =>
+				//completeWith("PONG! " + body.getOrElse(""))
+				completeWith("size " + tf.wordSet.size().toString)
 			}
-		}~
-		path("similarityDemo") {
-		  get { ctx: RequestContext =>
-		  	ctx.complete(
-		  	    HttpResponse(status = StatusCodes.OK,headers = Nil,content = HttpContent(`text/html`,demoHtml))
-		  	    )
-		  }
-		}~
-		path("cartigram") {
-		  get { jsonpWithParameter("callback") { ctx: RequestContext =>
-		    val query = ctx.request.queryParams
-		  
-		    try{
-		      val cartActor = Actor.actorOf[CartigramHandler].start
-		      cartActor ! cartRequest(query,ctx)
-		    }
-		    catch{
-		      case e:Exception => 
-		        ctx.complete(
-		            response(StatusCodes.BadRequest,compact(render("error" -> "Having a bad day?")))
-		         )
-		    }}
-		  }
-		}~
-		path("ner") {
-		  post { jsonpWithParameter("callback") { ctx : RequestContext => 
-		    val data = ctx.request.content.as[String].right.get toString
+		} ~
+		path("pong") {
+			(get | post) { ctx:RequestContext => 
+				val content = ctx.request.content
+				val headers = Map[String, String]()
+				ctx.request.headers.foreach(x => 
+					headers+=(x.name -> x.value)
+				)
+				ctx.complete(
+					response(StatusCodes.OK,compact(render("headers" -> content.as[String].right.getOrElse(headers("user-agent"))) ))
+				)
+			}
+		} ~
+		path("similarity") { 
+			post { jsonpWithParameter("callback") { ctx: RequestContext =>
+				val data = ctx.request.content.as[String].right.get toString
 			  
-			  try{
-			    // Is it JSON?
-			    val requestData = Some(parse(data))
-			    val NERActor = Actor.actorOf[NERHandler].start
-				NERActor ! NerRequest(requestData, ctx)
-				
-			  }
-		     // Not valid JSON
-			  catch{
-			    case e:net.liftweb.json.JsonParser.ParseException => 
-			      println(e)
-			      ctx.complete(
-			          response(StatusCodes.BadRequest,compact(render("error" -> "Problem parsing dataset")))
-			      )
-			  }
-		    }
+				try{
+					val requestData = Some(parse(data))
+					val simActor = Actor.actorOf[SimilarityHandler].start
+					simActor ! similarityRequest(requestData, ctx, tf)			
+				} catch {
+					case e: net.liftweb.json.JsonParser.ParseException => 
+						println(e)
+						ctx.complete(
+							response(StatusCodes.BadRequest, compact(render("error" -> "Problem parsing dataset")))
+						)
+				}
+			}}
+		} ~
+		path("similarityDemo") {
+			get { ctx: RequestContext =>
+				ctx.complete (
+					HttpResponse(status = StatusCodes.OK, headers = Nil, content = HttpContent(`text/html`,demoHtml))
+				)
 		  }
+		} ~
+		path("cartigram") {
+			get { jsonpWithParameter("callback") { ctx: RequestContext =>
+				val query = ctx.request.queryParams
+		  
+				try {
+					val cartActor = Actor.actorOf[CartigramHandler].start
+					cartActor ! cartRequest(query,ctx)
+				} catch {
+					case e: Exception => 
+						ctx.complete(
+							response(StatusCodes.BadRequest, compact(render("error" -> "Having a bad day?")))
+						)
+				}
+			}}
+		} ~
+		path("ner") {
+			post { jsonpWithParameter("callback") { ctx : RequestContext => 
+				val data = ctx.request.content.as[String].right.get toString
+			  
+				try {
+					// Is it JSON?
+					val requestData = Some(parse(data))
+					val NERActor = Actor.actorOf[NERHandler].start
+					NERActor ! NerRequest(requestData, ctx)
+				} catch {
+					// Not valid JSON
+					case e:net.liftweb.json.JsonParser.ParseException => 
+					println(e)
+					ctx.complete(
+						response(StatusCodes.BadRequest, compact(render("error" -> "Problem parsing dataset")))
+					)
+				}
+			}}
 		}
 	}
 	def response(status:StatusCode, jsonResponse: String): HttpResponse = {
-			HttpResponse (
-								status = status,
-								headers = Nil,
-								content = HttpContent(
-										`application/json`,jsonResponse
-						))
-		}
+		HttpResponse (
+			status = status,
+			headers = Nil,
+			content = HttpContent(`application/json`, jsonResponse)
+		)
+	}
 }
 
 

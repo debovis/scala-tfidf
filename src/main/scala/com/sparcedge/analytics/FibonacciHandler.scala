@@ -11,13 +11,13 @@ class FibonacciHandler extends Actor {
 	def receive = {
 		case FibonacciRequest(num, ctx) =>
 			val fibs = calcFibs(num)
-			ctx.complete(
+			ctx.complete (
 				HttpResponse (
 					status = StatusCodes.OK,
 					headers = Nil,
-					content = HttpContent(
-							`application/json`,
-							compact(render("fibs" -> fibs))
+					content = HttpContent (
+						`application/json`,
+						compact(render("fibs" -> fibs))
 					)
 				)
 			)
