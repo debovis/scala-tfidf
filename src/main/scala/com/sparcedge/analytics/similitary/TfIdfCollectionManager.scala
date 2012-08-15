@@ -29,7 +29,7 @@ class TfIdfCollectionManager(var elements: List[TfIdfElement]) extends Actor {
 		case ReplaceTfIdfCollection(newTfIdf) => 
 			tfIdf = newTfIdf
 		case TfIdfGeneratorRequest() =>
-			self.sender ! tfIdf
+			self.reply(tfIdf)
 		case _ =>
 	}
 
