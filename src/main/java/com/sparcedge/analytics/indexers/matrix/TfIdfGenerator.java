@@ -29,7 +29,7 @@ public class TfIdfGenerator {
 	
 	private static Logger log = LoggerFactory.getLogger(TfIdfGenerator.class);
 	
-	public HashMap<String,String> 	documents;
+	public Map<String,String> 		documents;
 	public RealMatrix 				tfmatrix;
 	public RealMatrix				tfidfMatrix;
 	public RealVector				corpusWordFrequency;
@@ -38,7 +38,7 @@ public class TfIdfGenerator {
 	public Map<String,Bag<String>> 	documentWordFrequencyMap 	= new HashMap<String,Bag<String>>();
 	public SortedSet<String> 		wordSet 					= new TreeSet<String>();
 	
-	public TfIdfGenerator(HashMap<String,String> documents) throws Exception{
+	public TfIdfGenerator(Map<String,String> documents) throws Exception{
 		this.documents = documents;
 		this.generateMatrix();
 		this.getTFIDFMatrix();

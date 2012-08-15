@@ -1,6 +1,6 @@
-package com.sparcedge.analytics
+package com.sparcedge.analytics.similarity
 
-import akka.actor.Actor
+import akka.actor.{Actor,ActorRef}
 import cc.spray.RequestContext
 import cc.spray.http.{HttpResponse,HttpContent,StatusCodes,HttpHeader,StatusCode}
 import cc.spray.http.MediaTypes._
@@ -18,7 +18,7 @@ import com.sparcedge.analytics.indexers.matrix.WordFrequencyWrapper
 import com.sparcedge.analytics.indexers.matrix.WordFrequencyWrapper._
 import com.sparcedge.analytics.similarity.matrix.CosineSimilarity
 import com.sparcedge.analytics.indexers.matrix.TfIdfGenerator
-import com.sparcedge.analytics.similitarycollector._
+import com.sparcedge.analytics.similitary._
 
 
 class SimilarityHandler extends Actor {
@@ -26,13 +26,13 @@ class SimilarityHandler extends Actor {
 	val log = LoggerFactory.getLogger(getClass)
   
 	def receive = {
-		case similarityRequest	(requestData, ctx,tfMatrix) =>
+		case similarityRequest	(value, ctx, tfManager) =>
+			val tfMatrix = (tfManager ? TfIdfGeneratorRequest()).as[TfIdfGenerator].get
 			val minimumSimilarityQualifier = .3
 		  
 			try {
-				val comp = (requestData.get \ "data" \ "document").extract[dataSet]
 				val corpusWords = tfMatrix.wordSet.toArray().toList
-				val comparisonWordSet = WordFrequencyWrapper.getWordFrequencies(FrequencyType.WORDNET, comp.value)
+				val comparisonWordSet = WordFrequencyWrapper.getWordFrequencies(FrequencyType.WORDNET, value)
 				val comparisonWordKeySet = comparisonWordSet.uniqueSet()
 				val comparisonVect = new ArrayRealVector(tfMatrix.wordSet.size())
 
@@ -94,5 +94,5 @@ class similarityResult (
 	val document : String
 )
 
-case class similarityRequest(requestData:Some[net.liftweb.json.JsonAST.JValue], ctx: RequestContext, tf:TfIdfGenerator)
+case class similarityRequest(value: String, ctx: RequestContext, tfManager: ActorRef)
 

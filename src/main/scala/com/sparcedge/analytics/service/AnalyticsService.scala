@@ -6,22 +6,32 @@ import cc.spray.http.MediaTypes._
 import cc.spray.http.HttpHeaders.{`Cache-Control`, `Connection`}
 import cc.spray.http.{HttpResponse,HttpContent,StatusCodes,HttpHeader}
 import cc.spray.http.CacheDirectives.`no-cache`
-import cc.spray.directives.{IntNumber,Remaining}
+import cc.spray.directives.{IntNumber,Remaining,JavaUUID}
 import akka.actor.{PoisonPill, Actor, Scheduler, ActorRef}
+import akka.routing.{CyclicIterator,Routing}
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import scala.collection.mutable.Map
 import scala.io.Source
 
-import com.sparcedge.analytics.similitarycollector._
+import java.util.concurrent.TimeUnit.SECONDS
+
 import com.sparcedge.analytics.indexers.matrix.TfIdfGenerator
+import com.sparcedge.analytics.similarity._
 
 trait AnalyticsService extends Directives {
   
+  	var simActors = List[ActorRef]()
+  	for(i <- 1 to 50) {
+  		simActors = Actor.actorOf[SimilarityHandler].start() :: simActors
+  	}
+	val simLoadBalancer = Routing.loadBalancerActor(new CyclicIterator(simActors))
+
+	val elements = SimilarityElementCollector.retrieveTextElements("sparcin")
+	val tfIdfManager = Actor.actorOf(new TfIdfCollectionManager(elements)).start
+	Scheduler.schedule(tfIdfManager, UpdateTfIdfCollection(), 60, 60, SECONDS)
+
 	val demoHtml = Source.fromURL(getClass.getResource("/similarityDemo.html")).mkString
-	val coll = new collectionCollector
-	var questions = coll.getQuestions
-	val tf = new TfIdfGenerator(questions)
 	
 	val analyticsService = {
 		pathPrefix("static") {
@@ -29,30 +39,32 @@ trait AnalyticsService extends Directives {
 				getFromResourceDirectory("static")
 			}
 		} ~
-		path("fibs" / IntNumber) { num =>
-			get { ctx: RequestContext =>
-				val fibActor = Actor.actorOf[FibonacciHandler].start
-				fibActor ! FibonacciRequest(num, ctx)
+		(pathPrefix("similarity") & parameter("apiKey")) { apiKey =>
+			get {
+				parameter("q") { query => ctx: RequestContext =>
+					simLoadBalancer ! similarityRequest(query, ctx, tfIdfManager)
+				}
+			} ~
+			path (IntNumber) { id =>
+				put {
+					content(as[String]) { content =>
+						//Insert Mongo
+						tfIdfManager ! AddElement(TfIdfElement(id, content))
+						completeWith {
+							"{\"created\": \"true\"}"
+						}
+					}
+				} ~
+				delete {
+					// Delete Mongo
+					tfIdfManager ! RemoveElement(id)
+					completeWith {
+						"{\"deleted\": \"true\"}"
+					}
+				}
 			}
-		} ~
-		path("ping") {
-			content(as[Option[String]]) { body =>
-				//completeWith("PONG! " + body.getOrElse(""))
-				completeWith("size " + tf.wordSet.size().toString)
-			}
-		} ~
-		path("pong") {
-			(get | post) { ctx:RequestContext => 
-				val content = ctx.request.content
-				val headers = Map[String, String]()
-				ctx.request.headers.foreach(x => 
-					headers+=(x.name -> x.value)
-				)
-				ctx.complete(
-					response(StatusCodes.OK,compact(render("headers" -> content.as[String].right.getOrElse(headers("user-agent"))) ))
-				)
-			}
-		} ~
+		}
+		/*
 		path("similarity") { 
 			post { jsonpWithParameter("callback") { ctx: RequestContext =>
 				val data = ctx.request.content.as[String].right.get toString
@@ -69,7 +81,9 @@ trait AnalyticsService extends Directives {
 						)
 				}
 			}}
-		} ~
+		} */ 
+
+		/* ~
 		path("similarityDemo") {
 			get { ctx: RequestContext =>
 				ctx.complete (
@@ -110,7 +124,7 @@ trait AnalyticsService extends Directives {
 					)
 				}
 			}}
-		}
+		} */
 	}
 	def response(status:StatusCode, jsonResponse: String): HttpResponse = {
 		HttpResponse (

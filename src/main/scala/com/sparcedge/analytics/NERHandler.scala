@@ -14,6 +14,7 @@ import org.apache.commons.collections15.bag.HashBag
 import org.apache.commons.math3.linear.{OpenMapRealMatrix,RealMatrix}
 
 import com.sparcedge.analytics.nerextractor.NERGenerator
+import com.sparcedge.analytics.similarity._
 
 class NERHandler extends Actor {
 
