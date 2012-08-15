@@ -18,7 +18,6 @@ import com.sparcedge.analytics.indexers.matrix.WordFrequencyWrapper
 import com.sparcedge.analytics.indexers.matrix.WordFrequencyWrapper._
 import com.sparcedge.analytics.similarity.matrix.CosineSimilarity
 import com.sparcedge.analytics.indexers.matrix.TfIdfGenerator
-import com.sparcedge.analytics.similitary._
 
 
 class SimilarityHandler extends Actor {

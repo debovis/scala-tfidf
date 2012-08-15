@@ -9,9 +9,9 @@ object SimilarityElementCollector {
 	def retrieveTextElements(apiKey: String): List[TfIdfElement] = {
 	
 		var elements = List[TfIdfElement]()
-		val elementLimit = 2000
+		val elementLimit = 100
 
-		val connection = new MongoCollectionWrapper("similarity")
+		val connection = new MongoCollectionWrapper("sparciq")
 		val collection = connection.getCollection
 	  
 		val q = MongoDBObject(("apiKey" -> apiKey))
