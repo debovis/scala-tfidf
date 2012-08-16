@@ -27,7 +27,7 @@ trait AnalyticsService extends Directives {
   	}
 	val simLoadBalancer = Routing.loadBalancerActor(new CyclicIterator(simActors))
 
-	val elements = SimilarityElementCollector.retrieveTextElements("sparcin")
+	val elements = SimilarityElementDatabase.retrieveTextElements("sparcin")
 	val tfIdfManager = Actor.actorOf(new TfIdfCollectionManager(elements)).start
 	Scheduler.schedule(tfIdfManager, UpdateTfIdfCollection(), 60, 60, SECONDS)
 
@@ -64,24 +64,6 @@ trait AnalyticsService extends Directives {
 				}
 			}
 		}
-		/*
-		path("similarity") { 
-			post { jsonpWithParameter("callback") { ctx: RequestContext =>
-				val data = ctx.request.content.as[String].right.get toString
-			  
-				try{
-					val requestData = Some(parse(data))
-					val simActor = Actor.actorOf[SimilarityHandler].start
-					simActor ! similarityRequest(requestData, ctx, tf)			
-				} catch {
-					case e: net.liftweb.json.JsonParser.ParseException => 
-						println(e)
-						ctx.complete(
-							response(StatusCodes.BadRequest, compact(render("error" -> "Problem parsing dataset")))
-						)
-				}
-			}}
-		} */ 
 
 		/* ~
 		path("similarityDemo") {
