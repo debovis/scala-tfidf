@@ -48,7 +48,7 @@ trait AnalyticsService extends Directives {
 			path (IntNumber) { id =>
 				put {
 					content(as[String]) { content =>
-						//Insert Mongo
+						SimilarityElementDatabase.insertTextElement(id, content, apiKey)
 						tfIdfManager ! AddElement(TfIdfElement(id, content))
 						completeWith {
 							"{\"created\": \"true\"}"
@@ -56,7 +56,7 @@ trait AnalyticsService extends Directives {
 					}
 				} ~
 				delete {
-					// Delete Mongo
+					SimilarityElementDatabase.deleteTextElement(id, apiKey)
 					tfIdfManager ! RemoveElement(id)
 					completeWith {
 						"{\"deleted\": \"true\"}"
