@@ -41,6 +41,7 @@ object SimilarityElementDatabase {
 		)
 		try {
 			connection.getCollection += element
+			connection.getCollection
 			true
 		} catch {
 			case e: Exception =>

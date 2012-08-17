@@ -68,7 +68,7 @@ class SimilarityHandler extends Actor {
 				case e:Exception => 
 					println(e.printStackTrace())
 					ctx.complete (
-						response(StatusCodes.OK, compact(render("similarity" -> List().toString())))
+						response(StatusCodes.OK, compact(render("similarity" -> "[]")))
 					)
 			}
 		case _ =>

@@ -80,11 +80,16 @@ public class TfIdfGenerator {
 			documentId++;
 		}
 
-		log.debug(" adding "+ newDocumentsCounter + " to the matrix");
-		newGenerator.updateMatricies();
-		
-		log.debug("created new tf-idf compenents");
-		return newGenerator;
+		if(newDocumentsCounter>0){
+			log.debug(" adding "+ newDocumentsCounter + " to the matrix");
+			newGenerator.updateMatricies();
+			log.debug("created new tf-idf compenents");
+			return newGenerator;
+		}
+		else{
+			log.debug(" no new documents, keeping old corpus");
+			return oldGenerator;
+		}
 	}
 
 	private void updateMatricies() throws Exception{
@@ -92,7 +97,7 @@ public class TfIdfGenerator {
 		this.getTFIDFMatrix();
 		this.corpusWordFrequency = this.getCorpusWordFreq();
 	}
-	
+
 	private void generateTfMatrix() throws Exception{
 		// we need a documents.keySet().size() x wordSet.size() matrix to hold this info
 		int numDocs = documents.keySet().size();
@@ -114,7 +119,7 @@ public class TfIdfGenerator {
 		log.debug("\n\ncreated term frequency matrix with dimensions (" + tfmatrix.getRowDimension() + "," + tfmatrix.getColumnDimension() + ")\n\n");
 
 	}
-	
+
 	private void getTFIDFMatrix(){
 		this.tfidfMatrix = new IdfIndexer().transform(tfmatrix);
 		log.debug("\n \n created tf-idf matrix with dimensions (" + tfidfMatrix.getRowDimension() + "," + tfidfMatrix.getColumnDimension() + ")\n\n");
