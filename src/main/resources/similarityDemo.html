@@ -32,13 +32,14 @@
 
 var main = {
 	getSimiarityData : function(question, cb) {
+		var apiKey = "sparcin";
 		$("#data").html('');
 		$.ajax({
 			url: "similarity",
-			type: "POST",
+			type: "GET",
 			contentType: "application/json",
 			dataType: "json",
-			data: JSON.stringify(question),
+			data: {"q":question, "apiKey":apiKey},
 			success: function(response){
 				$('#data').empty();
 
@@ -86,7 +87,7 @@ var main = {
 		        	$table.append(tableHTML);
 
 		        	// add compdoc
-		        	$compdoc.html("Question asked: "  + question.data.document.value);
+		        	$compdoc.html("Question asked: "  + question);
 
 		        	cb();
 	        	}
@@ -134,15 +135,16 @@ $(function() {
 		.live('change', function() {
 			var question = $(this).val();
 
-			if (question !== '')
+			if (question !== ''){
 				if(!question.length){
 					alert("please enter question");
 					return false;
 				}
 				else {
-					main.getSimiarityData({"data":{"document":{"title": "doc", "value": question}}},main.addTableSorter);
+					main.getSimiarityData(question,main.addTableSorter);
 					return false;
 				}
+			}
 		});
 
 });

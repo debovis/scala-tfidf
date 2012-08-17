@@ -8,7 +8,7 @@ import com.sparcedge.analytics.indexers.matrix.TfIdfGenerator
 
 class TfIdfCollectionManager(var elements: List[TfIdfElement]) extends Actor {
 
-	var tfIdf = new TfIdfGenerator(convertElementListToMap(elements))
+	var tfIdf = new TfIdfGenerator(convertElementListToMap(elements),true)
 	var updatedElements = false
 
 	def receive = {
@@ -19,9 +19,10 @@ class TfIdfCollectionManager(var elements: List[TfIdfElement]) extends Actor {
 			updatedElements = true
 			elements = elements.filterNot(_.id == elementId)
 		case UpdateTfIdfCollection() =>
+			println("checking for added documents")
 			if(updatedElements) {
 				val future = Future {
-					val newTfIdf = new TfIdfGenerator(convertElementListToMap(elements))
+					val newTfIdf = TfIdfGenerator.addAndRemoveDocuments(convertElementListToMap(elements),tfIdf)
 					self ! ReplaceTfIdfCollection(newTfIdf)
 				}
 				updatedElements = false
@@ -49,5 +50,5 @@ case class RemoveElement(id: Int)
 
 case class TfIdfGeneratorRequest()
 
-// Todo: replace value with actualy type needed by generator
+// Todo: replace value with actually type needed by generator
 case class TfIdfElement(id: Int, value: String)

@@ -11,7 +11,7 @@ object SimilarityElementDatabase {
 	def retrieveTextElements(apiKey: String): List[TfIdfElement] = {
 	
 		var elements = List[TfIdfElement]()
-		val elementLimit = 100
+		val elementLimit = 2000
 		val collection = connection.getCollection
 	
 		collection.ensureIndex(MongoDBObject(("id" -> 1), ("apiKey" -> 1)), "id_index", true)
@@ -64,10 +64,3 @@ object SimilarityElementDatabase {
 		}
 	}
 }
-
-
-
-
-
-
-

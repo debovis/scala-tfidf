@@ -29,7 +29,7 @@ trait AnalyticsService extends Directives {
 
 	val elements = SimilarityElementDatabase.retrieveTextElements("sparcin")
 	val tfIdfManager = Actor.actorOf(new TfIdfCollectionManager(elements)).start
-	Scheduler.schedule(tfIdfManager, UpdateTfIdfCollection(), 60, 60, SECONDS)
+	Scheduler.schedule(tfIdfManager, UpdateTfIdfCollection(), 60, 120, SECONDS)
 
 	val demoHtml = Source.fromURL(getClass.getResource("/similarityDemo.html")).mkString
 	
@@ -63,58 +63,14 @@ trait AnalyticsService extends Directives {
 					}
 				}
 			}
-		}
-
-		/* ~
+		}~
 		path("similarityDemo") {
 			get { ctx: RequestContext =>
 				ctx.complete (
 					HttpResponse(status = StatusCodes.OK, headers = Nil, content = HttpContent(`text/html`,demoHtml))
 				)
 		  }
-		} ~
-		path("cartigram") {
-			get { jsonpWithParameter("callback") { ctx: RequestContext =>
-				val query = ctx.request.queryParams
-		  
-				try {
-					val cartActor = Actor.actorOf[CartigramHandler].start
-					cartActor ! cartRequest(query,ctx)
-				} catch {
-					case e: Exception => 
-						ctx.complete(
-							response(StatusCodes.BadRequest, compact(render("error" -> "Having a bad day?")))
-						)
-				}
-			}}
-		} ~
-		path("ner") {
-			post { jsonpWithParameter("callback") { ctx : RequestContext => 
-				val data = ctx.request.content.as[String].right.get toString
-			  
-				try {
-					// Is it JSON?
-					val requestData = Some(parse(data))
-					val NERActor = Actor.actorOf[NERHandler].start
-					NERActor ! NerRequest(requestData, ctx)
-				} catch {
-					// Not valid JSON
-					case e:net.liftweb.json.JsonParser.ParseException => 
-					println(e)
-					ctx.complete(
-						response(StatusCodes.BadRequest, compact(render("error" -> "Problem parsing dataset")))
-					)
-				}
-			}}
-		} */
-	}
-	def response(status:StatusCode, jsonResponse: String): HttpResponse = {
-		HttpResponse (
-			status = status,
-			headers = Nil,
-			content = HttpContent(`application/json`, jsonResponse)
-		)
+		}
 	}
 }
-
 

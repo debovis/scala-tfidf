@@ -89,7 +89,7 @@ class CartigramHandler extends Actor{
 			}
 			connection.getConnection.close()
 
-			val res = new TfIdfGenerator(sparcetMap)
+			val res = new TfIdfGenerator(sparcetMap,true)
 
 			ctx.complete (
 				HttpResponse (
