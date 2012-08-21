@@ -48,7 +48,8 @@ trait AnalyticsService extends Directives {
 			path (IntNumber) { id =>
 				put {
 					content(as[String]) { content =>
-						SimilarityElementDatabase.insertTextElement(id, content, apiKey)
+					  	if(apiKey == "sparcin")
+					  		SimilarityElementDatabase.insertTextElement(id, content, apiKey)
 						tfIdfManager ! AddElement(TfIdfElement(id, content))
 						completeWith {
 							"{\"created\": \"true\"}"
@@ -56,7 +57,8 @@ trait AnalyticsService extends Directives {
 					}
 				} ~
 				delete {
-					SimilarityElementDatabase.deleteTextElement(id, apiKey)
+					if(apiKey == "sparcin")
+						SimilarityElementDatabase.deleteTextElement(id, apiKey)
 					tfIdfManager ! RemoveElement(id)
 					completeWith {
 						"{\"deleted\": \"true\"}"

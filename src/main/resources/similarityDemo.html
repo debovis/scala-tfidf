@@ -1,10 +1,9 @@
 <html>
 <head>
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<!-- <script language="javascript" type="text/javascript" src=" {{ url_for('static',filename='lawnchair-0.6.1.min.js') }} "></script> -->
-<script language="javascript" type="text/javascript" src="https://raw.github.com/Mottie/tablesorter/master/js/jquery.tablesorter.js"></script>
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
-<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="/static/jquery.min.js"></script>
+<script language="javascript" type="text/javascript" src="/static/jquery.tablesorter.js"></script>
+<script type="text/javascript" src="/static/jquery-ui.min.js"></script>
+<link href="/static/jquery-ui.css" rel="stylesheet" type="text/css"/>
 <link href="/static/sparc-bootstrap.css" rel="stylesheet" type="text/css" />
 <link href="/static/styles.css" rel="stylesheet" type="text/css" />
 </head>
@@ -15,7 +14,17 @@
 		<img src="/static/sparciq-logo.png" class="logo" alt="SPARCIQ" />
 		<h3 class="similarity">Similarity API</h3>
 
-		<input id="question" class="question" type="text" name="question" value="Ask your question here." />
+		<select id="actionSelection">
+			<option value="query" selected>Query</option>
+			<option value="add">Add</option>
+			<option value="delete">Delete</option>
+		</select>
+
+		<form id="questionAction">
+			<input id="questionPutId" class="questionPutId" type="text" name="questionPutId" value="Id of question." />
+			<input id="question" class="question" type="text" name="question" value="Ask your question here." />
+			<input id="buttonSubmit" type="submit" name="submit" value="submit" />
+		</form>
 
 		<div id="data"></div>
 
@@ -32,8 +41,7 @@
 
 var main = {
 	getSimiarityData : function(question, cb) {
-		var apiKey = "sparcin";
-		$("#data").html('');
+		var apiKey = "test";
 		$.ajax({
 			url: "similarity",
 			type: "GET",
@@ -42,7 +50,6 @@ var main = {
 			data: {"q":question, "apiKey":apiKey},
 			success: function(response){
 				$('#data').empty();
-
 				var globalData = {};
 				var items = response.similarity;
 
@@ -112,9 +119,53 @@ var main = {
 	        			);
 			}
 		})
-},
+	},
 	addTableSorter : function(){
 		$('#myTable').tablesorter({sortList: [[2,1]]});
+	},
+	putSimilarityData : function(question,id,cb){
+		$.ajax({
+			url: "similarity/"+id+"?apiKey=test",
+			type: "PUT",
+			data: question,
+			success: function(response){
+				var parsedResponse = JSON.parse(response);
+				if(parsedResponse.created){
+					cb(question);
+				}
+				else alert('problem');
+			},
+			error: function(response){
+				console.log("error "+response);
+			}
+		})
+	},
+	deleteSimilarityData : function(id,cb){
+		$.ajax({
+			url: "similarity/"+id+"?apiKey=test",
+			type: "DELETE",
+			data: {},
+			success: function(response){
+				var parsedResponse = JSON.parse(response);
+				if(parsedResponse.deleted){
+					cb(id);
+				}
+				else alert('problem');
+			},
+			error: function(response){
+				console.log(JSON.parse(response));
+			}
+		})
+	},
+	questionAdded : function(question){
+		alert('Added question: '+ question);
+		$('#question').val('Add a new question');
+		$('#questionPutId').val("Id for question");
+	},
+	questionDeleted : function(id){
+		alert('Deleted question id: '+id);
+		$('#question').val('Add a new question');
+		$('#questionPutId').val("Id for question");
 	}
 };
 
@@ -122,19 +173,57 @@ var main = {
 
 $(function() {
 	var defaultText = 'Ask the wise one.';
+	var putDefaultText = 'Add a new question';
+	var putIdText = "Id for question";
+	var deleteDefaultText = 'Enter Id to Delete a question';
+
+	$('#questionPutId')
+		.val(putIdText)
+		.live('click',function(){
+			var id = $(this).val();
+			if (id === putIdText) {
+				$(this).val('');
+			}
+	});
 
 	$('#question')
 		.val(defaultText)
 		.live('click', function() {
 			var question = $(this).val();
-
 			if (question === defaultText) {
 				$(this).val('');
 			}
-		})
-		.live('change', function() {
-			var question = $(this).val();
+		});
 
+	$('#questionPutId').hide();
+
+	$('#questionAction').submit(function(){
+		var question = $('#question').val(),
+			id = $('#questionPutId').val(),
+			action = $('#actionSelection').find('option:selected').val();
+		if(action == 'add'){
+			if (question !== '' && id !== ''){
+				if(!question.length){
+					alert("please enter question and id");
+					return false;
+				}
+				else {
+					main.putSimilarityData(question,id,main.questionAdded);
+					return false;
+				}
+			}
+		} else if(action == 'delete'){
+			if (id !== ''){
+				if(!id.length){
+					alert("please enter id");
+					return false;
+				}
+				else {
+					main.deleteSimilarityData(id,main.questionDeleted);
+					return false;
+				}
+			}
+		} else if(action == 'query'){
 			if (question !== ''){
 				if(!question.length){
 					alert("please enter question");
@@ -145,8 +234,27 @@ $(function() {
 					return false;
 				}
 			}
-		});
+		}
+		return false;
+	});
 
+	$('#actionSelection').change(function(){
+		var selection = $(this).find('option:selected').val();
+		if(selection === 'add'){
+			$('#question').show();
+			$('#questionPutId').show();
+			$('#data').empty();
+			$('#question').val(defaultText);
+		} else if(selection === 'delete'){
+			$('#question').hide();
+			$('#data').empty();
+			$('#questionPutId').val(putIdText);
+		} else if(selection === 'query'){
+			$('#questionPutId').hide();
+			$('#question').show();
+			$('#question').val(defaultText);
+		}
+	})
 });
 
 </script>
