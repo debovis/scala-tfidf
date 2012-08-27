@@ -1,20 +1,17 @@
-.PHONY: clean build install test test-coverage eclipse
+.PHONY: clean build install test test-coverage
 
 build:
-	sbt update
-	sbt compile
+	sbt one-jar
 
 clean:
 	sbt clean
 
 install:
-	sbt one-jar
+	./recipes/install.sh
+	#sbt one-jar
 
 uninstall:
-	echo "uninstall"
-
-eclipse:
-	sbt eclipse
+	./recipes/uninstall.sh
 
 test:
 	sbt test

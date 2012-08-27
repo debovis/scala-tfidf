@@ -1,4 +1,4 @@
-sudo apt-get install wordnet tcl8.5 tcl8.5-dev tk8.5 tk8.5-dev wordnet-base wordnet-gui
+sudo apt-get install make wordnet tcl8.5 tcl8.5-dev tk8.5 tk8.5-dev wordnet-base wordnet-gui
 #sudo easy_install xlrd
 dir=`pwd`
 ( cd $dir/temp/WordNet-3.0; make distclean)
