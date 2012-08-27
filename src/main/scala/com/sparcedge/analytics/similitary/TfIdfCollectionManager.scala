@@ -6,9 +6,9 @@ import akka.dispatch.Future
 
 import com.sparcedge.analytics.indexers.matrix.TfIdfGenerator
 
-class TfIdfCollectionManager(var elements: List[TfIdfElement]) extends Actor {
+class TfIdfCollectionManager(resourceLocation: String,var elements: List[TfIdfElement]) extends Actor {
 
-	var tfIdf = new TfIdfGenerator(convertElementListToMap(elements),true)
+	var tfIdf = new TfIdfGenerator(convertElementListToMap(elements),true,resourceLocation)
 	var updatedElements = false
 
 	def receive = {

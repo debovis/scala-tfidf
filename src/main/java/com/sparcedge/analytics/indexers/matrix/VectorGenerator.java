@@ -110,7 +110,7 @@ public class VectorGenerator {
         Arrays.asList(new IRecognizer[] {
         new BoundaryRecognizer(),
         new StopwordRecognizer(),
-        new ContentWordRecognizer()
+        new ContentWordRecognizer("")
     }));
     recognizerChain.init();
     List<Token> recognizedTokens = recognizerChain.recognize(tokens);

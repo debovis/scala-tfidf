@@ -28,6 +28,7 @@ trait AnalyticsService extends Directives {
   		simActors = Actor.actorOf[SimilarityHandler].start() :: simActors
   	}
 	val simLoadBalancer = Routing.loadBalancerActor(new CyclicIterator(simActors))
+	def resourceLocation: String
 	
 	def similarityDatabase: SimilarityElementDatabase
 	def tfIdfManager: ActorRef
@@ -42,7 +43,7 @@ trait AnalyticsService extends Directives {
 		(pathPrefix("similarity") & parameter("apiKey")) { apiKey =>
 			get {
 				parameter("q") { query => ctx: RequestContext =>
-					simLoadBalancer ! similarityRequest(query, ctx, tfIdfManager)
+					simLoadBalancer ! similarityRequest(resourceLocation,query, ctx, tfIdfManager)
 				}
 			} ~
 			path (IntNumber) { id =>

@@ -20,11 +20,12 @@ public class SentenceTokenizer {
   private RuleBasedBreakIterator breakIterator;
   
   public SentenceTokenizer() throws Exception {
-    this("src/main/resources/sentence_break_rules.txt");
+    this("src/main/resources");
   }
 
-  public SentenceTokenizer(String rulesfile) throws Exception {
+  public SentenceTokenizer(String resourceLocation) throws Exception {
     super();
+    String rulesfile = resourceLocation + "/rules-files/sentence_break_rules.txt";
     this.breakIterator = new RuleBasedBreakIterator(
       FileUtils.readFileToString(new File(rulesfile), "UTF-8"));
   }

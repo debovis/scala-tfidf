@@ -10,6 +10,7 @@ import com.sparcedge.analytics.mongodb.MongoCollectionWrapper
 import com.sparcedge.analytics.similarity._
 import akka.actor.Scheduler
 import java.util.concurrent.TimeUnit.SECONDS
+import net.liftweb.json._
 
 object Boot extends App {
 	
@@ -25,7 +26,11 @@ object Boot extends App {
 		override val similarityDatabase = new SimilarityElementDatabase(connection)
 	
 		val elements = similarityDatabase.retrieveTextElements("sparcin")
-		override val tfIdfManager = Actor.actorOf(new TfIdfCollectionManager(elements)).start
+		
+		var resourceLocationJValue = parse(scala.io.Source.fromFile(configStr).mkString) \ "resource-location"
+		override val resourceLocation =  resourceLocationJValue.asInstanceOf[JString].values.toString()
+		
+		override val tfIdfManager = Actor.actorOf(new TfIdfCollectionManager(resourceLocation,elements)).start
 		Scheduler.schedule(tfIdfManager, UpdateTfIdfCollection(), 60, 120, SECONDS)
 	}
 

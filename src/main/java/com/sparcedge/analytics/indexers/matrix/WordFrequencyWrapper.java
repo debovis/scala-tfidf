@@ -26,19 +26,17 @@ import com.sparcedge.analytics.tokenizers.WordTokenizer;
 
 public class WordFrequencyWrapper {
 
-	
-	public static Bag<String> getWordFrequencies(FrequencyType type, String text) throws Exception {
-		if(type == FrequencyType.WORDNET) return getWordNetWordFrequencies(text);
+	public static Bag<String> getWordFrequencies(FrequencyType type, String text, String resourceLocation) throws Exception {
+		if(type == FrequencyType.WORDNET) return getWordNetWordFrequencies(text,resourceLocation);
 		else if(type == FrequencyType.LUCENE_NGRAM) return getLuceneNgramWordFrequencies(text);
 		else if(type == FrequencyType.NGRAM) return getWordNGramFrequencies(text);
 		else if(type == FrequencyType.LUCENE) return getLuceneWordFrequenciesV2(text);
 		else return null;
-		
 	}
 	
-	private static Bag<String> getWordNetWordFrequencies(String text) throws Exception {
+	private static Bag<String> getWordNetWordFrequencies(String text,String resourceLocation) throws Exception {
 		Bag<String> wordBag = new HashBag<String>();
-		WordTokenizer wordTokenizer = new WordTokenizer();
+		WordTokenizer wordTokenizer = new WordTokenizer(resourceLocation);
 		wordTokenizer.setText(text);
 		List<Token> tokens = new ArrayList<Token>();
 		Token token = null;
@@ -49,7 +47,7 @@ public class WordFrequencyWrapper {
 				Arrays.asList(new IRecognizer[] {
 						new BoundaryRecognizer(),
 						new StopwordRecognizer(),
-						new ContentWordRecognizer()
+						new ContentWordRecognizer(resourceLocation)
 				}));
 		//  new AbbreviationRecognizer(dataSource),
 		//  new PhraseRecognizer(dataSource),

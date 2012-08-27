@@ -28,15 +28,16 @@ public class ContentWordRecognizer implements IRecognizer {
 
 	private IDictionary dictionary;
 	private WordnetStemmer stemmer;
+	private String resourceLocation;
 	private List<POS> allowablePartsOfSpeech = Arrays.asList(new POS[] {
 			POS.NOUN, POS.VERB, POS.ADJECTIVE, POS.ADVERB});
 	
-//	public ContentWordRecognizer(CachingDictionary cachedDict){
-//		
-//	}
+	public ContentWordRecognizer(String resourceLocation){
+		this.resourceLocation = resourceLocation;
+	}
 
 	public void init() throws Exception {
-		File dictFiles = new File("./temp/WordNet-3.0/dict/");
+		File dictFiles = new File(resourceLocation + "/wordnet");
 		//new URL("file", null, "./temp/WordNet-3.0/dict/")
 		this.dictionary = new Dictionary(dictFiles);
 		dictionary.open();

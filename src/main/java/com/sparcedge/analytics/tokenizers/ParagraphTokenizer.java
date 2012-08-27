@@ -21,11 +21,12 @@ public class ParagraphTokenizer {
   private RuleBasedBreakIterator breakIterator;
   
   public ParagraphTokenizer() throws Exception {
-    this("src/main/resources/paragraph_break_rules.txt");
+    this("src/main/resources");
   }
 
-  public ParagraphTokenizer(String rulesfile) throws Exception {
+  public ParagraphTokenizer(String resourceLocation) throws Exception {
     super();
+    String rulesfile = resourceLocation + "/rule-files/paragraph_break_rules.txt";
     this.breakIterator = new RuleBasedBreakIterator(
       FileUtils.readFileToString(new File(rulesfile), "UTF-8"));
   }

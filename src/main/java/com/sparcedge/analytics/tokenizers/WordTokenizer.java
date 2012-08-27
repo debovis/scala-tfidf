@@ -42,11 +42,12 @@ public class WordTokenizer {
   private RuleBasedBreakIterator breakIterator;
   
   public WordTokenizer() throws Exception {
-    this("src/main/resources/word_break_rules.txt");
+	   this("src/main/resources");
   }
 
-  public WordTokenizer(String rulesfile) throws Exception {
+  public WordTokenizer(String resourceLocation) throws Exception {
     super();
+    String rulesfile = resourceLocation + "/rule-files/word_break_rules.txt";
     this.breakIterator = new RuleBasedBreakIterator(FileUtils.readFileToString(new File(rulesfile), "UTF-8"));
   }
   

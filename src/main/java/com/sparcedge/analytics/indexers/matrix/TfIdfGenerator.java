@@ -25,15 +25,17 @@ public class TfIdfGenerator {
 	private static Logger log = LoggerFactory.getLogger(TfIdfGenerator.class);
 
 	public Map<String,String> 		documents;
+	private String					resourceLocation;
 	public RealMatrix 				tfmatrix;
 	public RealMatrix				tfidfMatrix;
 	public RealVector				corpusWordFrequency;
 	public Map<String,Bag<String>> 	documentWordFrequencyMap 	= new HashMap<String,Bag<String>>();
 	public SortedSet<String> 		wordSet 					= new TreeSet<String>();
 
-	public TfIdfGenerator(Map<String,String> documents, boolean generate) throws Exception{
+	public TfIdfGenerator(Map<String,String> documents, boolean generate,String resourceLocation) throws Exception{
 		if(generate){
 			this.documents = documents;
+			this.resourceLocation = resourceLocation;
 			this.init();
 		}
 		else {
@@ -48,7 +50,7 @@ public class TfIdfGenerator {
 		Integer docId=0;
 		for (String key : documents.keySet()) {
 			String text = getText(documents.get(key));
-			Bag<String> wordFrequencies = WordFrequencyWrapper.getWordFrequencies(FrequencyType.WORDNET ,text);
+			Bag<String> wordFrequencies = WordFrequencyWrapper.getWordFrequencies(FrequencyType.WORDNET ,text, resourceLocation);
 			wordSet.addAll(wordFrequencies.uniqueSet());
 			documentWordFrequencyMap.put(key, wordFrequencies);
 			docId++;
@@ -66,7 +68,7 @@ public class TfIdfGenerator {
 			if(!oldGenerator.documents.containsKey(key)){
 				// Test text
 				String text = getText(newText);		
-				Bag<String> wordFrequencies = WordFrequencyWrapper.getWordFrequencies(FrequencyType.WORDNET ,text);
+				Bag<String> wordFrequencies = WordFrequencyWrapper.getWordFrequencies(FrequencyType.WORDNET ,text,oldGenerator.resourceLocation);
 				newGenerator.wordSet.addAll(wordFrequencies.uniqueSet());
 				newGenerator.documentWordFrequencyMap.put(key, wordFrequencies);
 				newDocumentsCounter++;
@@ -82,6 +84,7 @@ public class TfIdfGenerator {
 
 		if(newDocumentsCounter>0){
 			log.debug(" adding "+ newDocumentsCounter + " to the matrix");
+			newGenerator.resourceLocation = oldGenerator.resourceLocation;
 			newGenerator.updateMatricies();
 			log.debug("created new tf-idf compenents");
 			return newGenerator;
