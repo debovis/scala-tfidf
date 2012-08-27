@@ -4,14 +4,12 @@ import com.mongodb.casbah.query.Imports._
 import com.mongodb.casbah.query._
 import com.sparcedge.analytics.mongodb.MongoCollectionWrapper
 
-object SimilarityElementDatabase {
-
-	val connection = new MongoCollectionWrapper("sparciq")
+class SimilarityElementDatabase(connection: MongoCollectionWrapper) {
 
 	def retrieveTextElements(apiKey: String): List[TfIdfElement] = {
 	
 		var elements = List[TfIdfElement]()
-		val elementLimit = 2000
+		val elementLimit = 20
 		val collection = connection.getCollection
 	
 		collection.ensureIndex(MongoDBObject(("id" -> 1), ("apiKey" -> 1)), "id_index", true)

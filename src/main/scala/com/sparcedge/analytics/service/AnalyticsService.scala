@@ -19,6 +19,8 @@ import java.util.concurrent.TimeUnit.SECONDS
 import com.sparcedge.analytics.indexers.matrix.TfIdfGenerator
 import com.sparcedge.analytics.similarity._
 
+import com.sparcedge.analytics.mongodb.MongoCollectionWrapper
+
 trait AnalyticsService extends Directives {
   
   	var simActors = List[ActorRef]()
@@ -26,11 +28,9 @@ trait AnalyticsService extends Directives {
   		simActors = Actor.actorOf[SimilarityHandler].start() :: simActors
   	}
 	val simLoadBalancer = Routing.loadBalancerActor(new CyclicIterator(simActors))
-
-	val elements = SimilarityElementDatabase.retrieveTextElements("sparcin")
-	val tfIdfManager = Actor.actorOf(new TfIdfCollectionManager(elements)).start
-	Scheduler.schedule(tfIdfManager, UpdateTfIdfCollection(), 60, 120, SECONDS)
-
+	
+	def similarityDatabase: SimilarityElementDatabase
+	def tfIdfManager: ActorRef
 	val demoHtml = Source.fromURL(getClass.getResource("/similarityDemo.html")).mkString
 	
 	val analyticsService = {
@@ -49,7 +49,7 @@ trait AnalyticsService extends Directives {
 				put {
 					content(as[String]) { content =>
 					  	if(apiKey == "sparcin")
-					  		SimilarityElementDatabase.insertTextElement(id, content, apiKey)
+					  		similarityDatabase.insertTextElement(id, content, apiKey)
 						tfIdfManager ! AddElement(TfIdfElement(id, content))
 						completeWith {
 							"{\"created\": \"true\"}"
@@ -58,7 +58,7 @@ trait AnalyticsService extends Directives {
 				} ~
 				delete {
 					if(apiKey == "sparcin")
-						SimilarityElementDatabase.deleteTextElement(id, apiKey)
+						similarityDatabase.deleteTextElement(id, apiKey)
 					tfIdfManager ! RemoveElement(id)
 					completeWith {
 						"{\"deleted\": \"true\"}"

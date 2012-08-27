@@ -9,9 +9,9 @@ import org.apache.commons.lang.StringUtils;
 
 import net.liftweb.json._
 
-class MongoCollectionWrapper(item:String) {
+class MongoCollectionWrapper(configLocation:String,item:String) {
   
-	val mongoStoreConfig:MongoDBStore = MongoDBStore.apply(item)
+	val mongoStoreConfig:MongoDBStore = MongoDBStore.apply(configLocation,item)
 	val dbName = mongoStoreConfig.dbName
 	val collName = mongoStoreConfig.collection
 
@@ -40,8 +40,8 @@ class MongoDBStore (
 
 object MongoDBStore {
 	
-	def apply(item:String): MongoDBStore = {
-	  	val mongoEntry = parse(scala.io.Source.fromFile("analytics-engine-config.json").mkString) \ item
+	def apply(configLocation:String,item:String): MongoDBStore = {
+	  	val mongoEntry = parse(scala.io.Source.fromFile(configLocation).mkString) \ item
 		val host = JsonHelper.toString(mongoEntry \ "server" \ "host")
 		val port = JsonHelper.toInt(mongoEntry \ "server" \ "port")
 		val dbName = JsonHelper.toString(mongoEntry \ "database")
