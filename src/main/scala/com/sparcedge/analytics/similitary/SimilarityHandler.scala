@@ -7,6 +7,7 @@ import cc.spray.http.MediaTypes._
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import java.util.LinkedHashMap
+import collection.JavaConversions._
 
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -25,13 +26,13 @@ class SimilarityHandler extends Actor {
 	val log = LoggerFactory.getLogger(getClass)
   
 	def receive = {
-		case similarityRequest	(resourceLocation,value, ctx, tfManager) =>
+		case similarityRequest	(configMap,value, ctx, tfManager) =>
 			val tfMatrix = (tfManager ? TfIdfGeneratorRequest()).as[TfIdfGenerator].get
 			val minimumSimilarityQualifier = .3
 		  
 			try {
 				val corpusWords = tfMatrix.wordSet.toArray().toList
-				val comparisonWordSet = WordFrequencyWrapper.getWordFrequencies(FrequencyType.WORDNET, value, resourceLocation)
+				val comparisonWordSet = WordFrequencyWrapper.getWordFrequencies(FrequencyType.WORDNET, value, configMap)
 				val comparisonWordKeySet = comparisonWordSet.uniqueSet()
 				val comparisonVect = new ArrayRealVector(tfMatrix.wordSet.size())
 
@@ -93,5 +94,5 @@ class similarityResult (
 	val document : String
 )
 
-case class similarityRequest(resourceLocation:String,value: String, ctx: RequestContext, tfManager: ActorRef)
+case class similarityRequest(configmap: Map[String,String],value: String, ctx: RequestContext, tfManager: ActorRef)
 

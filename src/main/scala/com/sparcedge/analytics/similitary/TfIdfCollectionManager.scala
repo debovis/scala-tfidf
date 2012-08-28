@@ -2,13 +2,13 @@ package com.sparcedge.analytics.similarity
 
 import akka.actor.Actor
 import akka.dispatch.Future
- import collection.JavaConversions._
+import collection.JavaConversions._
 
 import com.sparcedge.analytics.indexers.matrix.TfIdfGenerator
 
-class TfIdfCollectionManager(resourceLocation: String,var elements: List[TfIdfElement]) extends Actor {
+class TfIdfCollectionManager(var elements: List[TfIdfElement], configMap: Map[String,String]) extends Actor {
 
-	var tfIdf = new TfIdfGenerator(convertElementListToMap(elements),true,resourceLocation)
+	var tfIdf = new TfIdfGenerator(convertElementListToMap(elements),true,configMap)
 	var updatedElements = false
 
 	def receive = {

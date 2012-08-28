@@ -47,7 +47,7 @@ public class WordTokenizer {
 
   public WordTokenizer(String resourceLocation) throws Exception {
     super();
-    String rulesfile = resourceLocation + "/rule-files/word_break_rules.txt";
+    String rulesfile = resourceLocation + "/word_break_rules.txt";
     this.breakIterator = new RuleBasedBreakIterator(FileUtils.readFileToString(new File(rulesfile), "UTF-8"));
   }
   

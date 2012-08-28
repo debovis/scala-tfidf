@@ -11,13 +11,13 @@ import akka.actor.{PoisonPill, Actor, Scheduler, ActorRef}
 import akka.routing.{CyclicIterator,Routing}
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
-import scala.collection.mutable.Map
 import scala.io.Source
 
 import java.util.concurrent.TimeUnit.SECONDS
 
 import com.sparcedge.analytics.indexers.matrix.TfIdfGenerator
 import com.sparcedge.analytics.similarity._
+import collection.JavaConversions._
 
 import com.sparcedge.analytics.mongodb.MongoCollectionWrapper
 
@@ -28,7 +28,7 @@ trait AnalyticsService extends Directives {
   		simActors = Actor.actorOf[SimilarityHandler].start() :: simActors
   	}
 	val simLoadBalancer = Routing.loadBalancerActor(new CyclicIterator(simActors))
-	def resourceLocation: String
+	def configMap: Map[String,String]
 	
 	def similarityDatabase: SimilarityElementDatabase
 	def tfIdfManager: ActorRef
@@ -43,7 +43,7 @@ trait AnalyticsService extends Directives {
 		(pathPrefix("similarity") & parameter("apiKey")) { apiKey =>
 			get {
 				parameter("q") { query => ctx: RequestContext =>
-					simLoadBalancer ! similarityRequest(resourceLocation,query, ctx, tfIdfManager)
+					simLoadBalancer ! similarityRequest(configMap,query, ctx, tfIdfManager)
 				}
 			} ~
 			path (IntNumber) { id =>

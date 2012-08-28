@@ -23,19 +23,19 @@ import org.slf4j.*;
 public class TfIdfGenerator {
 
 	private static Logger log = LoggerFactory.getLogger(TfIdfGenerator.class);
-
+	private Map<String,String> configMap;
+	
 	public Map<String,String> 		documents;
-	private String					resourceLocation;
 	public RealMatrix 				tfmatrix;
 	public RealMatrix				tfidfMatrix;
 	public RealVector				corpusWordFrequency;
 	public Map<String,Bag<String>> 	documentWordFrequencyMap 	= new HashMap<String,Bag<String>>();
 	public SortedSet<String> 		wordSet 					= new TreeSet<String>();
 
-	public TfIdfGenerator(Map<String,String> documents, boolean generate,String resourceLocation) throws Exception{
+	public TfIdfGenerator(Map<String,String> documents, boolean generate, Map<String,String> configMap) throws Exception{
 		if(generate){
 			this.documents = documents;
-			this.resourceLocation = resourceLocation;
+			this.configMap = configMap;
 			this.init();
 		}
 		else {
@@ -50,7 +50,7 @@ public class TfIdfGenerator {
 		Integer docId=0;
 		for (String key : documents.keySet()) {
 			String text = getText(documents.get(key));
-			Bag<String> wordFrequencies = WordFrequencyWrapper.getWordFrequencies(FrequencyType.WORDNET ,text, resourceLocation);
+			Bag<String> wordFrequencies = WordFrequencyWrapper.getWordFrequencies(FrequencyType.WORDNET ,text, configMap);
 			wordSet.addAll(wordFrequencies.uniqueSet());
 			documentWordFrequencyMap.put(key, wordFrequencies);
 			docId++;
@@ -68,7 +68,7 @@ public class TfIdfGenerator {
 			if(!oldGenerator.documents.containsKey(key)){
 				// Test text
 				String text = getText(newText);		
-				Bag<String> wordFrequencies = WordFrequencyWrapper.getWordFrequencies(FrequencyType.WORDNET ,text,oldGenerator.resourceLocation);
+				Bag<String> wordFrequencies = WordFrequencyWrapper.getWordFrequencies(FrequencyType.WORDNET ,text,oldGenerator.configMap);
 				newGenerator.wordSet.addAll(wordFrequencies.uniqueSet());
 				newGenerator.documentWordFrequencyMap.put(key, wordFrequencies);
 				newDocumentsCounter++;
@@ -84,7 +84,7 @@ public class TfIdfGenerator {
 
 		if(newDocumentsCounter>0){
 			log.debug(" adding "+ newDocumentsCounter + " to the matrix");
-			newGenerator.resourceLocation = oldGenerator.resourceLocation;
+			newGenerator.configMap = oldGenerator.configMap;
 			newGenerator.updateMatricies();
 			log.debug("created new tf-idf compenents");
 			return newGenerator;

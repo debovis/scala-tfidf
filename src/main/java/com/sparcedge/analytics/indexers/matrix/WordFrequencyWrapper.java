@@ -3,7 +3,9 @@ package com.sparcedge.analytics.indexers.matrix;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections15.Bag;
 import org.apache.commons.collections15.bag.HashBag;
@@ -26,17 +28,17 @@ import com.sparcedge.analytics.tokenizers.WordTokenizer;
 
 public class WordFrequencyWrapper {
 
-	public static Bag<String> getWordFrequencies(FrequencyType type, String text, String resourceLocation) throws Exception {
-		if(type == FrequencyType.WORDNET) return getWordNetWordFrequencies(text,resourceLocation);
+	public static Bag<String> getWordFrequencies(FrequencyType type, String text, Map<String,String> configMap) throws Exception {
+		if(type == FrequencyType.WORDNET) return getWordNetWordFrequencies(text,configMap);
 		else if(type == FrequencyType.LUCENE_NGRAM) return getLuceneNgramWordFrequencies(text);
 		else if(type == FrequencyType.NGRAM) return getWordNGramFrequencies(text);
 		else if(type == FrequencyType.LUCENE) return getLuceneWordFrequenciesV2(text);
 		else return null;
 	}
 	
-	private static Bag<String> getWordNetWordFrequencies(String text,String resourceLocation) throws Exception {
+	private static Bag<String> getWordNetWordFrequencies(String text,Map<String,String> configMap) throws Exception {
 		Bag<String> wordBag = new HashBag<String>();
-		WordTokenizer wordTokenizer = new WordTokenizer(resourceLocation);
+		WordTokenizer wordTokenizer = new WordTokenizer(configMap.get("rules-files"));
 		wordTokenizer.setText(text);
 		List<Token> tokens = new ArrayList<Token>();
 		Token token = null;
@@ -47,7 +49,7 @@ public class WordFrequencyWrapper {
 				Arrays.asList(new IRecognizer[] {
 						new BoundaryRecognizer(),
 						new StopwordRecognizer(),
-						new ContentWordRecognizer(resourceLocation)
+						new ContentWordRecognizer(configMap.get("resource-location"))
 				}));
 		//  new AbbreviationRecognizer(dataSource),
 		//  new PhraseRecognizer(dataSource),

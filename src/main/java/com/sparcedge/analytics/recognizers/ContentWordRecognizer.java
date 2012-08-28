@@ -37,7 +37,7 @@ public class ContentWordRecognizer implements IRecognizer {
 	}
 
 	public void init() throws Exception {
-		File dictFiles = new File(resourceLocation + "/wordnet");
+		File dictFiles = new File(resourceLocation);
 		//new URL("file", null, "./temp/WordNet-3.0/dict/")
 		this.dictionary = new Dictionary(dictFiles);
 		dictionary.open();

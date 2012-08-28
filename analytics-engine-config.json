@@ -39,5 +39,5 @@
         "password": ""
     },
     "resource-location": "/usr/local/dict",
-    "rules-files": "./rule-files"
+    "rules-files": "/Users/johndebovis/workspace/analytics-engine/src/main/resources/rule-files"
 }
