@@ -38,5 +38,6 @@
         "username": "",
         "password": ""
     },
-    "resource-location": "/Users/johndebovis/workspace/analytics-engine/src/main/resources"
+    "resource-location": "/usr/local/dict",
+    "rules-files": "./rule-files"
 }
