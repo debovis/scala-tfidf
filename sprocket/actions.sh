@@ -21,7 +21,7 @@ case "$1" in
         cp `find ./ | grep -i one-jar\.jar` $SPROCKET_PACKAGE_DIR/analytics-engine.jar
 
         echo "Copying rules-files directory... "
-        cp ./src/main/resources/rule-files $SPROCKET_PACKAGE_DIR
+        cp -R ./src/main/resources/rule-files $SPROCKET_PACKAGE_DIR
 
         echo "Replicating deployment bundle to destination... "
         rsync -ravP ./sprocket $SPROCKET_PACKAGE_DIR
