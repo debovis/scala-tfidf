@@ -40,7 +40,7 @@ trait AnalyticsService extends Directives {
 				getFromResourceDirectory("static")
 			}
 		} ~
-		(pathPrefix("similarity") & parameter("apiKey")) { apiKey =>
+		(pathPrefix("similarity") & parameter("key")) { key =>
 			get {
 				parameter("q") { query => ctx: RequestContext =>
 					simLoadBalancer ! similarityRequest(configMap,query, ctx, tfIdfManager)
@@ -48,21 +48,21 @@ trait AnalyticsService extends Directives {
 			} ~
 			path (IntNumber) { id =>
 				put {
-					content(as[String]) { content =>
-					  	if(apiKey == "sparcin")
-					  		similarityDatabase.insertTextElement(id, content, apiKey)
+					formFields("document")  { content =>
+					  	if(key == "sparcin")
+					  		similarityDatabase.insertTextElement(id, content, key)
 						tfIdfManager ! AddElement(TfIdfElement(id, content))
 						completeWith {
-							"{\"created\": \"true\"}"
+							"{\"created\": true}"
 						}
 					}
 				} ~
 				delete {
-					if(apiKey == "sparcin")
-						similarityDatabase.deleteTextElement(id, apiKey)
+					if(key == "sparcin")
+						similarityDatabase.deleteTextElement(id, key)
 					tfIdfManager ! RemoveElement(id)
 					completeWith {
-						"{\"deleted\": \"true\"}"
+						"{\"deleted\": true}"
 					}
 				}
 			}

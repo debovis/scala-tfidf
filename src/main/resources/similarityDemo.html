@@ -47,7 +47,7 @@ var main = {
 			type: "GET",
 			contentType: "application/json",
 			dataType: "json",
-			data: {"q":question, "apiKey":apiKey},
+			data: {"q":question, "key":apiKey},
 			success: function(response){
 				$('#data').empty();
 				var globalData = {};
@@ -125,9 +125,9 @@ var main = {
 	},
 	putSimilarityData : function(question,id,cb){
 		$.ajax({
-			url: "similarity/"+id+"?apiKey=test",
+			url: "similarity/"+id+"?key=test",
 			type: "PUT",
-			data: question,
+			data: {"document":question},
 			success: function(response){
 				var parsedResponse = JSON.parse(response);
 				if(parsedResponse.created){
@@ -142,7 +142,7 @@ var main = {
 	},
 	deleteSimilarityData : function(id,cb){
 		$.ajax({
-			url: "similarity/"+id+"?apiKey=test",
+			url: "similarity/"+id+"?key=test",
 			type: "DELETE",
 			data: {},
 			success: function(response){
