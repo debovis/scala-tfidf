@@ -6,35 +6,35 @@ import cc.spray.http.{HttpResponse,HttpContent,StatusCodes}
 import cc.spray.http.MediaTypes._
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
-
-import org.joda.time._
-import org.joda.time.format._
-import org.joda
-
-import scala.util.Random
-import java.util.LinkedHashMap
-import org.apache.commons.lang.StringUtils
+//
+//import org.joda.time._
+//import org.joda.time.format._
+//import org.joda
+//
+//import scala.util.Random
+//import java.util.LinkedHashMap
+//import org.apache.commons.lang.StringUtils
 import java.io.StringReader
-import java.util.Date
-import java.text.SimpleDateFormat
-import java.util.LinkedHashMap
-
-import com.mongodb.casbah.query.Imports._
-import com.mongodb.casbah.query._
-import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.Imports.{MongoDBObject,ObjectId,BasicDBList}
-
-import org.apache.lucene.util._
-import org.apache.lucene.analysis._
-import org.apache.lucene.analysis.shingle.ShingleAnalyzerWrapper
-import org.apache.lucene.analysis.tokenattributes._
-
-import com.sparcedge.analytics.mongodb.MongoCollectionWrapper
-import com.sparcedge.analytics.indexers.matrix.{TfIdfGenerator,IdfIndexer}
-import com.sparcedge.analytics.similarity.matrix.CosineSimilarity
-import com.sparcedge.analytics.tokenizers.NGramAnalyzer
-import com.sparcedge.analytics.nerextractor.AbstractNer.NamedEntityType
-import com.sparcedge.analytics.nerextractor.OpenNlpNer
+//import java.util.Date
+//import java.text.SimpleDateFormat
+//import java.util.LinkedHashMap
+//
+//import com.mongodb.casbah.query.Imports._
+//import com.mongodb.casbah.query._
+//import com.mongodb.casbah.Imports._
+//import com.mongodb.casbah.Imports.{MongoDBObject,ObjectId,BasicDBList}
+//
+//import org.apache.lucene.util._
+//import org.apache.lucene.analysis._
+//import org.apache.lucene.analysis.shingle.ShingleAnalyzerWrapper
+//import org.apache.lucene.analysis.tokenattributes._
+//
+//import com.sparcedge.analytics.mongodb.MongoCollectionWrapper
+//import com.sparcedge.analytics.indexers.matrix.{TfIdfGenerator,IdfIndexer}
+//import com.sparcedge.analytics.similarity.matrix.CosineSimilarity
+//import com.sparcedge.analytics.tokenizers.NGramAnalyzer
+//import com.sparcedge.analytics.nerextractor.AbstractNer.NamedEntityType
+//import com.sparcedge.analytics.nerextractor.OpenNlpNer
 
 class CartigramHandler extends Actor{
 	implicit val formats = Serialization.formats(NoTypeHints)
