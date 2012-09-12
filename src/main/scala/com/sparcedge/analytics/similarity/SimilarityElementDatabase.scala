@@ -63,7 +63,8 @@ class SimilarityElementDatabase(connection: MongoCollectionWrapper) {
 	def updateWordFrequencies(elements: List[TfIdfElement]): Boolean = {
 	  val collection = connection.getCollection
 	  for(element <- elements){
-	    val wordBagTuple = element.words.uniqueSet().toArray().map(word => (word, element.words.getCount(word.toString ) )).toList
+	    val words = element.words.uniqueSet().toArray().map(word => (word, element.words.getCount(word.toString ) ))
+	    val wordBagTuple = words.toList
 	    collection.update(MongoDBObject("id" -> element.id), $set("wordFrequencies" -> wordBagTuple))
 	    element.persistedToDB = true
 	  }

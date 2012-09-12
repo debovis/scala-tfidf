@@ -9,9 +9,6 @@ import org.slf4j.LoggerFactory
 import com.sparcedge.analytics.indexers.matrix.TfObject
 import com.sparcedge.analytics.Timer
 
-
-import com.sparcedge.analytics.similitary._
-
 import com.sparcedge.analytics.mongodb.MongoCollectionWrapper
 
 class TfIdfCollectionManager(var elements: List[TfIdfElement], configPath: String, configMap: Map[String,String]) extends Actor {
