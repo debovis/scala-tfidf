@@ -1,4 +1,4 @@
-package com.sparcedge.analytics.similarity.matrix;
+package com.sparcedge.analytics.similaritytypes;
 
 import org.apache.commons.math3.linear.RealMatrix;
 

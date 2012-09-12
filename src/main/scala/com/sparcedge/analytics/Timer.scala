@@ -1,7 +1,7 @@
 package com.sparcedge.analytics
 
 object Timer {
-	var printTimings = false
+	var printTimings = true
 }
 
 class Timer {

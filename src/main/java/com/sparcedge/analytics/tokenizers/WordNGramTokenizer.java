@@ -23,9 +23,9 @@ public class WordNGramTokenizer {
 
 	private final Log log = LogFactory.getLog(getClass());
 
-	public static Bag<String> generate(String input, int minGram, int maxGram) 
+	public static HashBag<String> generate(String input, int minGram, int maxGram) 
 			throws IOException {
-		Bag<String> wordgrams = new HashBag<String>();
+		HashBag<String> wordgrams = new HashBag<String>();
 		List<String> tokens = new LinkedList<String>();
 		BreakIterator wordBreakIterator = BreakIterator.getWordInstance(Locale.getDefault());
 		wordBreakIterator.setText(input);

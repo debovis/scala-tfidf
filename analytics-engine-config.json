@@ -1,43 +1,49 @@
-{"analytics-engine": {
-        "server": {
-            "host": "mongo-node1.dev.sparcloud.net",
-            "port": 27017
-        },
-        "database": "sparc-platform-dev",
-        "collection": "point-data-warehouse",
-        "username": "",
-        "password": ""
-    },
-    "sparcet-prod": {
-    	"server": {
-    		"host": "107.20.154.14",
-    		"port":27017
-    	},
-    	"database": "sparcet",
-    	"collection" : "Sparcet",
-    	"username": "sparcet",
-        "password": "6d0bb00954ceb7fbee436bb55a8397a9"
-    },
-    "sparcet-local": {
-    	"server": {
-    		"host": "localhost",
-    		"port":27017
-    	},
-    	"database": "sparcet",
-    	"collection" : "Sparcet",
-    	"username": "",
-        "password": ""
-    },
-    "sparciq": {
-        "server": {
-            "host": "localhost",
-            "port":27017
-        },
-        "database": "sparciq",
-        "collection" : "similarity",
-        "username": "",
-        "password": ""
-    },
-    "resource-location": "/usr/local/dict",
-    "rules-files": "/Users/johndebovis/workspace/analytics-engine/src/main/resources/rule-files"
+{
+	"mongo-connections": {
+		"analytics-engine": {
+	        "server": {
+	            "host": "mongo-node1.dev.sparcloud.net",
+	            "port": 27017
+	        },
+	        "database": "sparc-platform-dev",
+	        "collection": "point-data-warehouse",
+	        "username": "",
+	        "password": ""
+	    },
+	    "sparcet-prod": {
+	    	"server": {
+	    		"host": "107.20.154.14",
+	    		"port":27017
+	    	},
+	    	"database": "sparcet",
+	    	"collection" : "Sparcet",
+	    	"username": "sparcet",
+	        "password": "6d0bb00954ceb7fbee436bb55a8397a9"
+	    },
+	    "sparcet-local": {
+	    	"server": {
+	    		"host": "localhost",
+	    		"port":27017
+	    	},
+	    	"database": "sparcet",
+	    	"collection" : "Sparcet",
+	    	"username": "",
+	        "password": ""
+	    },
+	    "sparciq": {
+	        "server": {
+	            "host": "localhost",
+	            "port":27017
+	        },
+	        "database": "sparciq",
+	        "collection" : "similarity",
+	        "username": "",
+	        "password": ""
+	    }
+	},
+	"config-values": {
+	    "resource-location": "/usr/local/dict",
+	    "rules-files": "/Users/johndebovis/workspace/analytics-engine/src/main/resources/rule-files",
+	    "production-environment": "false"
+	}
 }

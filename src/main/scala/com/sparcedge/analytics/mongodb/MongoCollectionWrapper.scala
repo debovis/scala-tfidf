@@ -41,15 +41,17 @@ class MongoDBStore (
 object MongoDBStore {
 	
 	def apply(configLocation:String,item:String): MongoDBStore = {
-	  	val mongoEntry = parse(scala.io.Source.fromFile(configLocation).mkString) \ item
+	  	val mongoEntry = parse(scala.io.Source.fromFile(configLocation).mkString) \ "mongo-connections" \ item
 		val host = JsonHelper.toString(mongoEntry \ "server" \ "host")
 		val port = JsonHelper.toInt(mongoEntry \ "server" \ "port")
 		val dbName = JsonHelper.toString(mongoEntry \ "database")
 		val collection = JsonHelper.toString(mongoEntry \ "collection")
 		val username = JsonHelper.toString(mongoEntry \ "username")
 		val password = JsonHelper.toString(mongoEntry \ "password")
+		
+		//println("server - %s, port - %d, dbName - %s, collection - %s, username - %s, password - %s".format(host, port,dbName,collection,username,password))
 
-		return new MongoDBStore (
+		new MongoDBStore (
 			server = host,
 			port = port,
 			dbName = dbName,

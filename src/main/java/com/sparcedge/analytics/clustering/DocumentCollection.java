@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.sparcedge.analytics.similarity.matrix.CosineSimilarity;
+import com.sparcedge.analytics.similaritytypes.CosineSimilarity;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math3.linear.RealMatrix;

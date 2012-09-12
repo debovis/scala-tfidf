@@ -1,4 +1,4 @@
-package com.sparcedge.analytics.similarity.matrix;
+package com.sparcedge.analytics.similaritytypes;
 
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -30,9 +30,13 @@ public class CosineSimilarity extends AbstractSimilarity {
 
 	public RealVector similarity(RealMatrix sourceDocuments, RealVector targetDoc){
 		RealVector res = new ArrayRealVector(new double[]{});
-		for(int i=0;i<sourceDocuments.getColumnDimension();i++){
-			RealVector thisVect = sourceDocuments.getColumnVector(i);
-			res = res.append(thisVect.cosine(targetDoc));
+		try{
+			for(int i=0;i<sourceDocuments.getColumnDimension();i++){
+				RealVector thisVect = sourceDocuments.getColumnVector(i);
+				res = res.append(thisVect.cosine(targetDoc));
+			}
+		} catch(Exception e){
+			System.out.println("zero norm exception");
 		}
 		return res;
 	}

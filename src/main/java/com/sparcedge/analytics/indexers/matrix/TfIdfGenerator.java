@@ -1,6 +1,8 @@
 package com.sparcedge.analytics.indexers.matrix;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -10,6 +12,7 @@ import com.sparcedge.analytics.indexers.matrix.WordFrequencyWrapper;
 import com.sparcedge.analytics.indexers.matrix.WordFrequencyWrapper.FrequencyType;
 
 import org.apache.commons.collections15.Bag;
+import org.apache.commons.collections15.bag.HashBag;
 import org.apache.commons.math3.linear.*;
 
 import org.slf4j.*;
@@ -25,14 +28,14 @@ public class TfIdfGenerator {
 	private static Logger log = LoggerFactory.getLogger(TfIdfGenerator.class);
 	private Map<String,String> configMap;
 	
-	public Map<String,String> 		documents;
+	public List<TfObject> 			documents;
 	public RealMatrix 				tfmatrix;
 	public RealMatrix				tfidfMatrix;
 	public RealVector				corpusWordFrequency;
-	public Map<String,Bag<String>> 	documentWordFrequencyMap 	= new HashMap<String,Bag<String>>();
+	public Map<String,HashBag<String>> 	documentWordFrequencyMap 	= new HashMap<String,HashBag<String>>();
 	public SortedSet<String> 		wordSet 					= new TreeSet<String>();
 
-	public TfIdfGenerator(Map<String,String> documents, boolean generate, Map<String,String> configMap) throws Exception{
+	public TfIdfGenerator(List<TfObject> documents, boolean generate, Map<String,String> configMap) throws Exception{
 		if(generate){
 			this.documents = documents;
 			this.configMap = configMap;
@@ -43,42 +46,51 @@ public class TfIdfGenerator {
 		}
 	}
 	public TfIdfGenerator(){
-		this.documents = new HashMap<String,String>();
+		this.documents = new ArrayList<TfObject>();
 	}
 
 	private void init() throws Exception {
-		Integer docId=0;
-		for (String key : documents.keySet()) {
-			String text = getText(documents.get(key));
-			Bag<String> wordFrequencies = WordFrequencyWrapper.getWordFrequencies(FrequencyType.WORDNET ,text, configMap);
+
+		for (TfObject obj : documents) {
+			HashBag<String> wordFrequencies = null;
+			if(!obj.hasWordFrequencies){
+				String text = getText(obj.documentText);
+				wordFrequencies = WordFrequencyWrapper.getWordFrequencies(FrequencyType.WORDNET ,text, configMap);
+				obj.setWordFrequencies(wordFrequencies);
+			}
+			else wordFrequencies = obj.wordFrequencies;
+			
 			wordSet.addAll(wordFrequencies.uniqueSet());
-			documentWordFrequencyMap.put(key, wordFrequencies);
-			docId++;
+			documentWordFrequencyMap.put(obj.id.toString(), wordFrequencies);
 		}
 		this.updateMatricies();
 	}
 
-	public static TfIdfGenerator addAndRemoveDocuments(Map<String,String> newDocuments, TfIdfGenerator oldGenerator) throws Exception{
+	public static TfIdfGenerator addAndRemoveDocuments(List<TfObject> newDocuments, TfIdfGenerator oldGenerator) throws Exception{
 		TfIdfGenerator newGenerator = new TfIdfGenerator();
 
 		int newDocumentsCounter =0;
 		Integer documentId=0;
-		for(String key : newDocuments.keySet()){
-			String newText = newDocuments.get(key);
-			if(!oldGenerator.documents.containsKey(key)){
-				// Test text
-				String text = getText(newText);		
-				Bag<String> wordFrequencies = WordFrequencyWrapper.getWordFrequencies(FrequencyType.WORDNET ,text,oldGenerator.configMap);
+		for(TfObject obj : newDocuments){
+			HashBag<String> wordFrequencies = null;
+			if(!obj.hasWordFrequencies){
+				String text = getText(obj.documentText);	
+				
+				// we dont have word frequency bag, get it and set it to the obj
+				wordFrequencies = WordFrequencyWrapper.getWordFrequencies(FrequencyType.WORDNET ,text,oldGenerator.configMap);
+				obj.setWordFrequencies(wordFrequencies);
+				obj.setHasWordFrequencies(true);
+				
 				newGenerator.wordSet.addAll(wordFrequencies.uniqueSet());
-				newGenerator.documentWordFrequencyMap.put(key, wordFrequencies);
+				newGenerator.documentWordFrequencyMap.put(obj.id.toString(), wordFrequencies);
 				newDocumentsCounter++;
 			}
 			else {
-				Bag<String> wordFrequencies = oldGenerator.documentWordFrequencyMap.get(key);
+				wordFrequencies = obj.wordFrequencies;
 				newGenerator.wordSet.addAll(wordFrequencies.uniqueSet());
-				newGenerator.documentWordFrequencyMap.put(key, wordFrequencies);
+				newGenerator.documentWordFrequencyMap.put(obj.id.toString(), wordFrequencies);
 			}
-			newGenerator.documents.put(key, newText);
+			newGenerator.documents.add(obj);
 			documentId++;
 		}
 
@@ -103,14 +115,14 @@ public class TfIdfGenerator {
 
 	private void generateTfMatrix() throws Exception{
 		// we need a documents.keySet().size() x wordSet.size() matrix to hold this info
-		int numDocs = documents.keySet().size();
+		int numDocs = documents.size();
 		int numWords = wordSet.size();
 		tfmatrix = new OpenMapRealMatrix(numWords, numDocs);
 		int i=0;
 		int j=0;
 		for(String word : wordSet){
-			for(String docName : documents.keySet()){
-				Bag<String> wordFrequencies = documentWordFrequencyMap.get(docName);
+			for(TfObject obj : documents){
+				Bag<String> wordFrequencies = documentWordFrequencyMap.get(obj.id);
 				int count = wordFrequencies.getCount(word);
 				//if(count > 2) System.out.println(word + " " + count);
 				tfmatrix.setEntry(i, j, count);

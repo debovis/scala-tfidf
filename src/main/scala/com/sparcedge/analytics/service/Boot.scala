@@ -13,29 +13,31 @@ import java.util.concurrent.TimeUnit.SECONDS
 import net.liftweb.json._
 import scala.collection.mutable.HashMap
 import collection.JavaConversions._
+import scala.collection.breakOut
 
 object Boot extends App {
 	
 	val log = LoggerFactory.getLogger(getClass)
-	
+	var configurationMap:Map[String,String] = Map()
 	val configStr = args.headOption.getOrElse {
 		throw new Exception("No Configuration Supplied")
 	}
 	log.debug("config file passed ", configStr)
 	
-	var resourceLocationJValue = parse(scala.io.Source.fromFile(configStr).mkString) \ "resource-location"
-	var rulesFilesLocationJValue = parse(scala.io.Source.fromFile(configStr).mkString) \ "rules-files"
+	var configurationJson = (parse(scala.io.Source.fromFile(configStr).mkString) \ "config-values").asInstanceOf[JObject].values
+	configurationJson.foreach {
+	  	case (key, value) => configurationMap +=  (key -> value.toString()) 
+	}
 
 	val mainModule = new AnalyticsService {
 		val connection = new MongoCollectionWrapper(configStr, "sparciq")
 		override val similarityDatabase = new SimilarityElementDatabase(connection)
-		override val configMap = Map("resource-location" -> resourceLocationJValue.asInstanceOf[JString].values.toString(),
-							"rules-files" -> rulesFilesLocationJValue.asInstanceOf[JString].values.toString())
+		override var configMap = configurationMap
 	
 		val elements = similarityDatabase.retrieveTextElements("sparcin")
 		
-		override val tfIdfManager = Actor.actorOf(new TfIdfCollectionManager(elements,configMap)).start
-		Scheduler.schedule(tfIdfManager, UpdateTfIdfCollection(), 60, 120, SECONDS)
+		override val tfIdfManager = Actor.actorOf(new TfIdfCollectionManager(elements,configStr,configurationMap)).start
+		Scheduler.schedule(tfIdfManager, UpdateTfIdfCollection(), 60, 60, SECONDS)
 	}
 
 	val httpService    = actorOf(new HttpService(mainModule.analyticsService))

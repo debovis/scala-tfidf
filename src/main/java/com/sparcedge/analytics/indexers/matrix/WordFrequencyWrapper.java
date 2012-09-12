@@ -3,11 +3,9 @@ package com.sparcedge.analytics.indexers.matrix;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections15.Bag;
 import org.apache.commons.collections15.bag.HashBag;
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.analysis.TokenStream;
@@ -28,7 +26,7 @@ import com.sparcedge.analytics.tokenizers.WordTokenizer;
 
 public class WordFrequencyWrapper {
 
-	public static Bag<String> getWordFrequencies(FrequencyType type, String text, Map<String,String> configMap) throws Exception {
+	public static HashBag<String> getWordFrequencies(FrequencyType type, String text, Map<String,String> configMap) throws Exception {
 		if(type == FrequencyType.WORDNET) return getWordNetWordFrequencies(text,configMap);
 		else if(type == FrequencyType.LUCENE_NGRAM) return getLuceneNgramWordFrequencies(text);
 		else if(type == FrequencyType.NGRAM) return getWordNGramFrequencies(text);
@@ -36,8 +34,8 @@ public class WordFrequencyWrapper {
 		else return null;
 	}
 	
-	private static Bag<String> getWordNetWordFrequencies(String text,Map<String,String> configMap) throws Exception {
-		Bag<String> wordBag = new HashBag<String>();
+	private static HashBag<String> getWordNetWordFrequencies(String text,Map<String,String> configMap) throws Exception {
+		HashBag<String> wordBag = new HashBag<String>();
 		WordTokenizer wordTokenizer = new WordTokenizer(configMap.get("rules-files"));
 		wordTokenizer.setText(text);
 		List<Token> tokens = new ArrayList<Token>();
@@ -67,8 +65,8 @@ public class WordFrequencyWrapper {
 		return wordBag;
 	}
 	
-	private static Bag<String> getLuceneNgramWordFrequencies(String text) throws Exception {
-		Bag<String> wordBag = new HashBag<String>();
+	private static HashBag<String> getLuceneNgramWordFrequencies(String text) throws Exception {
+		HashBag<String> wordBag = new HashBag<String>();
 		
 		ShingleAnalyzerWrapper ngram = new ShingleAnalyzerWrapper(Version.LUCENE_35,2,2);
 		TokenStream tokenStream = ngram.tokenStream("content", new StringReader(text));
@@ -81,8 +79,8 @@ public class WordFrequencyWrapper {
 		return wordBag;
 	}
 	
-	private static Bag<String> getLuceneWordFrequenciesV2(String text) throws Exception {
-		Bag<String> wordBag = new HashBag<String>();
+	private static HashBag<String> getLuceneWordFrequenciesV2(String text) throws Exception {
+		HashBag<String> wordBag = new HashBag<String>();
 		NGramAnalyzer ngram = new NGramAnalyzer();
 		TokenStream tokenStream = ngram.tokenStream("content", new StringReader(text));
 		//OffsetAttribute offsetAttribute = tokenStream.addAttribute(OffsetAttribute.class);
@@ -96,7 +94,7 @@ public class WordFrequencyWrapper {
 		return wordBag;
 	}
 	
-	private static Bag<String> getWordNGramFrequencies(String text) throws Exception {
+	private static HashBag<String> getWordNGramFrequencies(String text) throws Exception {
 		return WordNGramTokenizer.generate(text, 2, 2);
 	}
 	public enum FrequencyType {

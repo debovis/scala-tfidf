@@ -41,7 +41,7 @@
 
 var main = {
 	getSimiarityData : function(question, cb) {
-		var apiKey = "test";
+		var apiKey = "sparcin";
 		$.ajax({
 			url: "similarity",
 			type: "GET",
@@ -125,7 +125,7 @@ var main = {
 	},
 	putSimilarityData : function(question,id,cb){
 		$.ajax({
-			url: "similarity/"+id+"?key=test",
+			url: "similarity/"+id+"?key=sparcin",
 			type: "PUT",
 			data: {"document":question},
 			success: function(response){
@@ -142,7 +142,7 @@ var main = {
 	},
 	deleteSimilarityData : function(id,cb){
 		$.ajax({
-			url: "similarity/"+id+"?key=test",
+			url: "similarity/"+id+"?key=sparcin",
 			type: "DELETE",
 			data: {},
 			success: function(response){

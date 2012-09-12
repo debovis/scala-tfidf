@@ -28,7 +28,7 @@ trait AnalyticsService extends Directives {
   		simActors = Actor.actorOf[SimilarityHandler].start() :: simActors
   	}
 	val simLoadBalancer = Routing.loadBalancerActor(new CyclicIterator(simActors))
-	def configMap: Map[String,String]
+	var configMap: Map[String,String]
 	
 	def similarityDatabase: SimilarityElementDatabase
 	def tfIdfManager: ActorRef
@@ -49,17 +49,15 @@ trait AnalyticsService extends Directives {
 			path (IntNumber) { id =>
 				put {
 					formFields("document")  { content =>
-					  	if(key == "sparcin")
-					  		similarityDatabase.insertTextElement(id, content, key)
-						tfIdfManager ! AddElement(TfIdfElement(id, content))
+					  	similarityDatabase.insertTextElement(id, content, key)
+						tfIdfManager ! AddElement(TfIdfElement(id, "",content,null,false,true,false))
 						completeWith {
 							"{\"created\": true}"
 						}
 					}
 				} ~
 				delete {
-					if(key == "sparcin")
-						similarityDatabase.deleteTextElement(id, key)
+					similarityDatabase.deleteTextElement(id, key)
 					tfIdfManager ! RemoveElement(id)
 					completeWith {
 						"{\"deleted\": true}"
@@ -69,11 +67,18 @@ trait AnalyticsService extends Directives {
 		}~
 		path("similarityDemo") {
 			get { ctx: RequestContext =>
-				ctx.complete (
-					HttpResponse(status = StatusCodes.OK, headers = Nil, content = HttpContent(`text/html`,demoHtml))
-				)
+			 var production = configMap.get("production-environment").get.toBoolean
+			 if(!production){
+				completeCtx(ctx,demoHtml)
+			 }
+			 else{
+			   completeCtx(ctx,"Not available in production")
+			 }
 		  }
 		}
+	}
+	def completeCtx(ctx: RequestContext,text: String) = {
+	  ctx.complete(   HttpResponse(status = StatusCodes.OK, headers = Nil, content = HttpContent(`text/html`,text)))
 	}
 }
 

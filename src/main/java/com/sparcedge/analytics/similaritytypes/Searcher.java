@@ -1,4 +1,4 @@
-package com.sparcedge.analytics.similarity.matrix;
+package com.sparcedge.analytics.similaritytypes;
 
 import java.util.ArrayList;
 import java.util.Arrays;

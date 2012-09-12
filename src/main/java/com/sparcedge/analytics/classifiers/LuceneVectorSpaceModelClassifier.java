@@ -12,7 +12,7 @@ import java.util.Set;
 
 import com.sparcedge.analytics.clustering.ByValueComparator;
 import com.sparcedge.analytics.indexers.matrix.*;
-import com.sparcedge.analytics.similarity.matrix.*;	
+import com.sparcedge.analytics.similaritytypes.*;
 
 import org.apache.commons.collections15.Bag;
 import org.apache.commons.collections15.Transformer;

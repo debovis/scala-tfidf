@@ -17,8 +17,8 @@ import org.apache.commons.collections15.bag.HashBag
 
 import com.sparcedge.analytics.indexers.matrix.WordFrequencyWrapper
 import com.sparcedge.analytics.indexers.matrix.WordFrequencyWrapper._
-import com.sparcedge.analytics.similarity.matrix.CosineSimilarity
-import com.sparcedge.analytics.indexers.matrix.TfIdfGenerator
+import com.sparcedge.analytics.similaritytypes.CosineSimilarity
+import com.sparcedge.analytics.similarity._
 
 
 class SimilarityHandler extends Actor {
@@ -27,20 +27,20 @@ class SimilarityHandler extends Actor {
   
 	def receive = {
 		case similarityRequest	(configMap,value, ctx, tfManager) =>
-			val tfMatrix = (tfManager ? TfIdfGeneratorRequest()).as[TfIdfGenerator].get
+			val tfIdfGen = (tfManager ? TfIdfGeneratorRequest()).as[TfIdfGenerator].get
 			val minimumSimilarityQualifier = .3
 		  
 			try {
-				val corpusWords = tfMatrix.wordSet.toArray().toList
+				val corpusWords = tfIdfGen.wordSet.toList
 				val comparisonWordSet = WordFrequencyWrapper.getWordFrequencies(FrequencyType.WORDNET, value, configMap)
 				val comparisonWordKeySet = comparisonWordSet.uniqueSet()
-				val comparisonVect = new ArrayRealVector(tfMatrix.wordSet.size())
+				val comparisonVect = new ArrayRealVector(tfIdfGen.wordSet.size)
 
 				var i = 0
 				for(word <- corpusWords) {
 					if(comparisonWordKeySet.contains(word.toString())) {
-						var corpusWordFreq = tfMatrix.corpusWordFrequency.getEntry(i)
-						val documentsCount = tfMatrix.tfmatrix.getColumnDimension()
+						var corpusWordFreq = tfIdfGen.corpusWordFrequency.getEntry(i)
+						val documentsCount = tfIdfGen.tfMatrix.getColumnDimension()
 						val comparisonWordCount = comparisonWordSet.getCount(word.toString())
 						val finalTfIdf = (comparisonWordCount) * (1 + Math.log(documentsCount) - Math.log(corpusWordFreq))
 						comparisonVect.setEntry(i,finalTfIdf)
@@ -48,15 +48,17 @@ class SimilarityHandler extends Actor {
 					i+=1
 				}
 
-				val similarityVect = new CosineSimilarity().similarity(tfMatrix.tfidfMatrix,comparisonVect).toArray().toList
-				val keys = tfMatrix.documents.keySet().toArray().toList
+				val similarityVect = new CosineSimilarity().similarity(tfIdfGen.tfidfMatrix,comparisonVect).toArray().toList
+				val keys = tfIdfGen.documents.map(doc => doc.id).toList
+				val documentMap = tfIdfGen.documents.map(doc => (doc.id,doc.value)).toMap
 				var simList: List[similarityResult] = List()
 			  
-				// zip lists to return
+				// zip to make (key,similarity)
 				keys.zip(similarityVect).foreach { x => 
 					if(x._2.toDouble > minimumSimilarityQualifier) {
+						val documentId = x._1
 						val simScore = Math.round(x._2.toDouble * 10000).toDouble / 10000
-						simList = new similarityResult(x._1.toString(), simScore, tfMatrix.documents.get(x._1.toString())) :: simList
+						simList = new similarityResult(documentId, simScore, documentMap.get(documentId).get) :: simList
 					}
 				}
 				// Sort similarity list
@@ -89,7 +91,7 @@ class dataSet (
 )
 
 class similarityResult (
-	val id: String,
+	val id: Int,
 	val similarity : Double,
 	val document : String
 )
