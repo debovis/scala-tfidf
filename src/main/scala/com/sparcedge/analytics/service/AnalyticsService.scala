@@ -12,6 +12,7 @@ import akka.routing.{CyclicIterator,Routing}
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import scala.io.Source
+import cc.spray.http.HttpMethods._
 
 import java.util.concurrent.TimeUnit.SECONDS
 
@@ -48,19 +49,27 @@ trait AnalyticsService extends Directives {
 			} ~
 			path (IntNumber) { id =>
 				put {
-					formFields("document")  { content =>
-					  	similarityDatabase.insertTextElement(id, content, key)
-						tfIdfManager ! AddElement(TfIdfElement(id, "",content,null,false,true,false))
-						completeWith {
-							"{\"created\": true}"
+					formFields("document")  { content => ctx: RequestContext =>
+					  // Spray not filtering correctly
+					  var httpMethod = ctx.request.method.toString()
+					  if(httpMethod == "PUT"){
+						tfIdfManager ! AddElement(TfIdfElement(id, "",content,null,false,true,false),key)
+						var responseText = "{\"created\": true}"
+						ctx.complete{
+						  HttpResponse(status = StatusCodes.OK, headers = Nil, content = HttpContent(`application/json`,responseText))
 						}
+					  }
 					}
 				} ~
-				delete {
-					similarityDatabase.deleteTextElement(id, key)
-					tfIdfManager ! RemoveElement(id)
-					completeWith {
-						"{\"deleted\": true}"
+				delete { ctx: RequestContext =>
+				  	// Spray not filtering correctly
+					var httpMethod = ctx.request.method.toString()
+					if(httpMethod == "DELETE"){
+						tfIdfManager ! RemoveElement(id,key)
+						var responseText = "{\"deleted\": true}"
+						ctx.complete{
+						  HttpResponse(status = StatusCodes.OK, headers = Nil, content = HttpContent(`application/json`,responseText))
+						}
 					}
 				}
 			}

@@ -145,14 +145,15 @@ object TfIdfGenerator {
       document.recentlyAdded = false
       newGenerator.documents = document :: newGenerator.documents
     }
-    if(newDocumentsCounter > 0){
-      log.debug(" adding " + newDocumentsCounter + " to the matrix")
+    val docCountDifference = (oldGenerator.documents.size - newGenerator.documents.size)
+    if(newDocumentsCounter > 0 || docCountDifference !=0 ){
+      log.debug(" adding %d to the matrix, difference is document size is %d".format(newDocumentsCounter, docCountDifference))
       newGenerator.configMap = oldGenerator.configMap
       newGenerator.updateMatricies
       log.debug(" created new tf-idf components")
       newGenerator
     } else {
-      log.debug("no new documents, keeping old corpus")
+      log.debug("no new or removed documents, keeping old corpus")
       oldGenerator
     }
   }

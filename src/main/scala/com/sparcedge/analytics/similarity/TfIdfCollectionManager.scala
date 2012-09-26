@@ -22,12 +22,14 @@ class TfIdfCollectionManager(var elements: List[TfIdfElement], configPath: Strin
 	val timer = new Timer()
 
 	def receive = {
-		case AddElement(element) =>
+		case AddElement(element,key) =>
 		  	log.debug("added document")
+		  	similarityDatabase.insertTextElement(element.id, element.value, key)
 			updatedElements = true
 			elements = element :: elements
-		case RemoveElement(elementId) =>
+		case RemoveElement(elementId,key) =>
 			updatedElements = true
+			similarityDatabase.deleteTextElement(elementId, key)
 			elements = elements.filterNot(_.id == elementId)
 		case UpdateTfIdfCollection() =>
 			if(updatedElements) {
@@ -52,9 +54,9 @@ case class UpdateTfIdfCollection()
 
 case class ReplaceTfIdfCollection(tfIdf: TfIdfGenerator)
 
-case class AddElement(element: TfIdfElement)
+case class AddElement(element: TfIdfElement,key: String)
 
-case class RemoveElement(id: Int)
+case class RemoveElement(id: Int,key: String)
 
 case class TfIdfGeneratorRequest()
 
