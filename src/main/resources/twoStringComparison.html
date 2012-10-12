@@ -1,0 +1,77 @@
+<html>
+<head>
+<script type="text/javascript" src="/static/jquery.min.js"></script>
+<script language="javascript" type="text/javascript" src="/static/jquery.tablesorter.js"></script>
+<script type="text/javascript" src="/static/jquery-ui.min.js"></script>
+<link href="/static/jquery-ui.css" rel="stylesheet" type="text/css"/>
+<link href="/static/sparc-bootstrap.css" rel="stylesheet" type="text/css" />
+<link href="/static/styles.css" rel="stylesheet" type="text/css" />
+</head>
+<body class="darkNav">
+
+	<div class="container">
+
+		<img src="/static/sparciq-logo.png" class="logo" alt="SPARCIQ" />
+		<h3 class="similarity">Similarity API</h3>
+
+		<label for="questionAction"> Find the similarity of two strings by entering them below.</label>
+		<form id="questionAction">
+			<input id="string1" class="question" type="text" name="string1" value="String 1." />
+			<input id="string2" class="question" type="text" name="string2" value="String 2." />
+			<input id="buttonSubmit" type="submit" name="submit" value="submit" />
+		</form>
+
+		<div id="data"></div>
+
+		<div class="footer">
+	    	<p>Copyright &copy; SPARC, LLC. All Rights Reserved.</p>
+	    </div>
+	</div>
+
+
+
+</div>
+
+<script>
+
+var main = {
+	getSimilarity : function(string1,string2, cb) {
+		$.ajax({
+			url: "compare",
+			type: "GET",
+			contentType: "application/json",
+			dataType: "json",
+			data: {"doc1":string1, "doc2":string2 },
+			success: function(response){
+				console.log(response.similarity)
+				$('#data').html("<p style='color:red;font-size:large'> The Cosine Similarity of the two documents is "+Math.round(response.similarity*100)+" % </p>");
+			},
+			error: function(response){
+				$('#data')
+	        			.empty()
+	        			.append(
+	        				$('<p />')
+	        					.addClass('response response-error')
+	        					.html('Error loading data.')
+	        			);
+			}
+		})
+	}
+};
+
+$(function() {
+
+	$('#string1').val("In java what is a public constructor");
+	$('#string2').val("In scala what is a constructor")
+
+	$('#questionAction').submit(function(){
+		var string1 = $('#string1').val();
+		var string2 = $('#string2').val();
+		main.getSimilarity(string1,string2,null);
+		return false;
+	});
+});
+
+</script>
+</body>
+</html>
