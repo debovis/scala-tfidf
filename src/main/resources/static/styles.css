@@ -43,3 +43,6 @@ h3.similarity {
 .response-error {
     color: #901010;
 }
+#responseFinal span {
+color: red;
+}

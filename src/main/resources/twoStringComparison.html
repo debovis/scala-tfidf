@@ -44,7 +44,47 @@ var main = {
 			data: {"doc1":string1, "doc2":string2 },
 			success: function(response){
 				console.log(response.similarity)
-				$('#data').html("<p style='color:red;font-size:large'> The Cosine Similarity of the two documents is "+Math.round(response.similarity*100)+" % </p>");
+				var simWordList = response.similiarWords;
+
+				var arrayString1 = string1.trim().split(" ");
+				var arrayString2 = string2.trim().split(" ");
+				console.log(arrayString1,arrayString2)
+
+				var joinedText1 = "",
+					joinedText2 = "";
+
+				for(var i=0; i<arrayString1.length;i++){
+					var added = false;
+					for(var j=0; j<simWordList.length;j++){
+						if( arrayString1[i] === simWordList[j] ){
+							 joinedText1 += " <span>" + arrayString1[i] + "</span> ";
+							 added = true;
+						}
+					}
+					if(!added){
+						joinedText1 += " " + arrayString1[i];
+					}
+				}
+
+				for(var i=0; i<arrayString2.length;i++){
+					var added = false;
+					for(var j=0; j<simWordList.length;j++){
+						if( arrayString2[i] === simWordList[j] ){
+							 joinedText2 += " <span>" + arrayString2[i] + "</span> ";
+							 added = true;
+						}
+					}
+					if(!added){
+						joinedText2 += " " + arrayString2[i];
+					}
+				}
+
+				var htmlResponse = "<div id='responseFinal'> The Cosine Similarity of the two documents is "+Math.round(response.similarity*100)+" % <br/><br/>";
+
+				htmlResponse += "Similarity in the strings: ";
+				htmlResponse += "<br /> " + joinedText1 + "<br />" + joinedText2 + "</div>";
+
+				$('#data').html(htmlResponse);
 			},
 			error: function(response){
 				$('#data')
