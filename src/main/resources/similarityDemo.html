@@ -11,6 +11,19 @@
 
 	<div class="container">
 
+		<div class="navbar">
+		  <div class="navbar-inner">
+		    <a class="brand" href="#">Analytics</a>
+		    <ul class="nav">
+		      <li><a href="http://c.sparcloud.net/">Home</a></li>
+		      <li><a href="http://c.sparcloud.net/semantics">Semantics</a></li>
+		      <li><a href="http://c.sparcloud.net/sparcd">SparcD</a></li>
+		      <li class="active"><a href="/similarityDemo">SparcIN Similarity</a></li>
+		      <li ><a href="/compareDemo">String Comparison</a></li>
+		    </ul>
+		  </div>
+		</div>
+
 		<img src="/static/sparciq-logo.png" class="logo" alt="SPARCIQ" />
 		<h3 class="similarity">Similarity API</h3>
 
@@ -127,6 +140,9 @@ var main = {
 		$.ajax({
 			url: "similarity/"+id+"?key=sparcin",
 			type: "PUT",
+			headers: {
+				authorization : "test"
+			},
 			data: {"document":question},
 			success: function(response){
 				var parsedResponse = JSON.parse(response);
@@ -201,6 +217,7 @@ $(function() {
 		var question = $('#question').val(),
 			id = $('#questionPutId').val(),
 			action = $('#actionSelection').find('option:selected').val();
+
 		if(action == 'add'){
 			if (question !== '' && id !== ''){
 				if(!question.length){
