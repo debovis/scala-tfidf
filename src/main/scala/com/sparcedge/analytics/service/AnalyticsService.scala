@@ -55,8 +55,7 @@ trait AnalyticsService extends Directives {
 				getFromResourceDirectory("static")
 			}
 		} ~
-		(pathPrefix("similarity") & parameter("key")) { key => ctx:RequestContext =>
-		  //println(ctx.request.headers)
+		(pathPrefix("similarity") & parameter("key")) { key => 
 			get {
 				parameter("q") { query => ctx: RequestContext =>
 					simLoadBalancer ! similarityRequest(configMap,query, ctx, tfIdfManager)
@@ -89,15 +88,6 @@ trait AnalyticsService extends Directives {
 				}
 			}
 		}~
-//		path("ner") { 
-//		  get { 
-//			  parameter("q") { query => ctx:RequestContext =>
-//			      println(query)
-//			      nerLoadBalancer ! NerRequest(query,ctx,configMap)
-//			   }
-//		    
-//		  }
-//		}~
 		path("compare") {
 		  get {
 		    parameters("doc1","doc2") { (doc1,doc2) => ctx:RequestContext =>
@@ -131,16 +121,8 @@ trait AnalyticsService extends Directives {
 	}
 	def completeCtx(ctx: RequestContext,text: String) = {
 	  ctx.complete(   HttpResponse(status = StatusCodes.OK, headers = Nil, content = HttpContent(`text/html`,text)))
-	}
-//	def md5(s:String) = {
-//	  MessageDigest.getInstance("md5").digest(s.getBytes())
-//	}
-				//					    ctx.request.headers.foreach{ el=>
-//					      	println("name: %s, value: %s".format(el.name,el.value))
-//					    	if(el.name == "Authorization"){
-//					    	  var authorizationResult = el.value.split(" ")(1)
-//					    	  var byteArray = Base64.decodeBase64(authorizationResult.getBytes())
-//					    	  println(new String((byteArray).map(_.toChar)))
-//		
+	}		
 }
+
+
 

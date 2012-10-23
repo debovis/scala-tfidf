@@ -95,7 +95,7 @@ class SimilarityHandler extends Actor {
 				val comparisonWordSet = WordFrequencyWrapper.getWordFrequencies(FrequencyType.WORDNET, value, configMap)
 				val comparisonWordKeySet = comparisonWordSet.uniqueSet()
 				val comparisonVect = new ArrayRealVector(tfIdfGen.wordSet.size)
-
+				
 				var i = 0
 				for(word <- corpusWords) {
 					if(comparisonWordKeySet.contains(word.toString())) {

@@ -71,16 +71,15 @@ class TfIdfGenerator(	var documents: List[TfIdfElement],
      var numDocs = documents.size
      var numWords = wordSet.size
      tfMatrix = new OpenMapRealMatrix(numWords,numDocs)
-     var i=0
-     var j=0
+     var i,j=0
      for(word <- wordSet){
        for(document <- documents){
          var wordFrequencies: HashBag[String] = documentWordFrequencyMap.get(document.id).get
          var count = wordFrequencies.getCount(word)
          tfMatrix.setEntry(i,j,count)
-         j=j+1
+         j +=1
        }
-       i=i+1
+       i +=1
        j=0
      }
      log.debug("created term frequency matrix with dimensions (" + tfMatrix.getRowDimension() + "," + tfMatrix.getColumnDimension() + ")");

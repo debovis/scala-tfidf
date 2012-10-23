@@ -60,6 +60,12 @@ case class RemoveElement(id: Int,key: String)
 
 case class TfIdfGeneratorRequest()
 
+case class SimpleTFElement(
+    id:Int,
+    var value:String,
+    var words:HashBag[String]
+)
+
 // Todo: replace value with actually type needed by generator
 case class TfIdfElement(
     id: Int, 
