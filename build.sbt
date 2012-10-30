@@ -12,6 +12,8 @@ resolvers += "Spray Repo" at "http://repo.spray.cc"
 
 resolvers += "OpenNLP Repo" at "http://opennlp.sourceforge.net/maven2"
 
+resolvers += "The New Motion Repository" at "http://nexus.thenewmotion.com/content/repositories/releases-public"
+
 seq(com.github.retronym.SbtOneJar.oneJarSettings: _*)
 
 seq(ScctPlugin.scctSettings: _*)
@@ -36,11 +38,13 @@ libraryDependencies ++= Seq (
 	"commons-io" % "commons-io" % "2.2",
 	"commons-logging" % "commons-logging" % "1.1.1",
 	"commons-lang" % "commons-lang" % "2.3",
+	"commons-codec" % "commons-codec" % "1.7",
 	"edu.mit" % "jwi" % "2.2.2",
 	"joda-time" % "joda-time" % "2.1",
 	"org.joda" % "joda-convert" % "1.2",
 	"org.apache.lucene" % "lucene-analyzers" % "3.5.0",
 	"edu.stanford.nlp" % "stanford-corenlp" % "1.3.1",
-	 "org.apache.opennlp" % "opennlp-tools" % "1.5.2-incubating",
-	 "org.apache.opennlp" % "opennlp-maxent" % "3.0.2-incubating"
+	"org.apache.opennlp" % "opennlp-tools" % "1.5.2-incubating",
+	"org.apache.opennlp" % "opennlp-maxent" % "3.0.2-incubating",
+	"ua.t3hnar.bcrypt" % "scala-bcrypt" % "1.4"
 ) 

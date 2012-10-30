@@ -15,10 +15,8 @@ import scala.io.Source
 import cc.spray.http.HttpMethods._
 
 import java.util.concurrent.TimeUnit.SECONDS
-//
-//import org.apache.commons.codec.binary.Base64
-//
-//import java.security.MessageDigest
+import org.apache.commons.codec.binary.Base64
+import ua.t3hnar.bcrypt._
 
 import com.sparcedge.analytics.indexers.matrix.TfIdfGenerator
 import com.sparcedge.analytics.similarity._
@@ -32,14 +30,7 @@ trait AnalyticsService extends Directives {
   	for(i <- 1 to 50) {
   		simActors = Actor.actorOf[SimilarityHandler].start() :: simActors
   	}
-  	
-//  	var nerActors = List[ActorRef]()
-//  	for(i <- 1 to 2) {
-//  		nerActors = Actor.actorOf[NERHandler].start() :: nerActors
-//  	}
-//  	
-//  	val nerLoadBalancer = Routing.loadBalancerActor(new CyclicIterator(nerActors))
-  	
+  	  	
 	val simLoadBalancer = Routing.loadBalancerActor(new CyclicIterator(simActors))
 	var configMap: Map[String,String]
 	
@@ -47,7 +38,10 @@ trait AnalyticsService extends Directives {
 	def tfIdfManager: ActorRef
 	val demoHtml = Source.fromURL(getClass.getResource("/similarityDemo.html")).mkString
 	val compareHtml = Source.fromURL(getClass.getResource("/twoStringComparison.html")).mkString
-	
+
+	val acceptedTenantJson = Source.fromURL(getClass.getResource("/acceptedTenants.json")).mkString	
+	var tenantKeyMap = (parse(acceptedTenantJson) \ "tenants").asInstanceOf[JObject].values
+	val sparcinKey = tenantKeyMap.get("sparcin").get.asInstanceOf[String]
 	
 	val analyticsService = {
 		pathPrefix("static") {
@@ -58,51 +52,56 @@ trait AnalyticsService extends Directives {
 		(pathPrefix("similarity") & parameter("key")) { key => 
 			get {
 				parameter("q") { query => ctx: RequestContext =>
-					simLoadBalancer ! similarityRequest(configMap,query, ctx, tfIdfManager)
+				  	var authenticated = authenticateBasicAuth(ctx.request.headers)
+				  	if(authenticated){
+				  		simLoadBalancer ! similarityRequest(configMap,query, ctx, tfIdfManager)
+				  	}
+				  	else completeUnauthorizedResponse(ctx)
 				}
 			} ~
 			path (IntNumber) { id => 
 				put {
 					formFields("document")  { content => ctx: RequestContext =>
-					  // Spray not filtering correctly
 					  var httpMethod = ctx.request.method.toString()
 					  if(httpMethod == "PUT"){
-					    tfIdfManager ! AddElement(TfIdfElement(id, "",content,null,false,true,false),key)
-						var responseText = "{\"created\": true}"
-						ctx.complete(
-						  HttpResponse(status = StatusCodes.OK, headers = Nil, content = HttpContent(`application/json`,responseText))
-						)
+					    if( authenticateBasicAuth(ctx.request.headers) ){
+						    tfIdfManager ! AddElement(TfIdfElement(id, "",content,null,false,true,false),key)
+							completeCtxJson(ctx,"{\"created\": true}")
+					    }
+					    else completeUnauthorizedResponse(ctx)
 					  }
 					}		    	
 				} ~
 				delete { ctx: RequestContext =>
-				  	// Spray not filtering correctly
 					var httpMethod = ctx.request.method.toString()
 					if(httpMethod == "DELETE"){
-						tfIdfManager ! RemoveElement(id,key)
-						var responseText = "{\"deleted\": true}"
-						ctx.complete{
-						  HttpResponse(status = StatusCodes.OK, headers = Nil, content = HttpContent(`application/json`,responseText))
+						// authenticated?
+						if( authenticateBasicAuth(ctx.request.headers) ){
+							tfIdfManager ! RemoveElement(id,key)
+							completeCtxJson(ctx,"{\"deleted\": true}")
 						}
-					}
+						else completeUnauthorizedResponse(ctx)
+				  }	
 				}
 			}
 		}~
 		path("compare") {
-		  get {
-		    parameters("doc1","doc2") { (doc1,doc2) => ctx:RequestContext =>
-		      simLoadBalancer ! twoStringSimilarityRequest(doc1,doc2, ctx, tfIdfManager,configMap)
-		    }
+		  get { ctx: RequestContext =>
+		  	if( authenticateBasicAuth(ctx.request.headers) ){
+			    parameters("doc1","doc2") { (doc1,doc2) => ctx:RequestContext =>
+			      simLoadBalancer ! twoStringSimilarityRequest(doc1,doc2, ctx, tfIdfManager,configMap)
+			    }
+			}
 		  }
 		}~
 		path("compareDemo"){
 		  get { ctx:RequestContext =>
 		    var production = configMap.get("production-environment").get.toBoolean
 		    if(!production){
-		      completeCtx(ctx,compareHtml)
+		      completeCtxHtml(ctx,compareHtml)
 		    }
 		    else {
-		      completeCtx(ctx,"Not available in production")
+		      completeCtxHtml(ctx,"Not available in production")
 		    }
 		    
 		  }
@@ -111,17 +110,46 @@ trait AnalyticsService extends Directives {
 			get { ctx: RequestContext =>
 			 var production = configMap.get("production-environment").get.toBoolean
 			 if(!production){
-				completeCtx(ctx,demoHtml)
+				completeCtxHtml(ctx,demoHtml)
 			 }
 			 else{
-			   completeCtx(ctx,"Not available in production")
+			   completeCtxHtml(ctx,"Not available in production")
 			 }
 		  }
 		}
 	}
-	def completeCtx(ctx: RequestContext,text: String) = {
+	def completeCtxHtml(ctx: RequestContext,text: String) = {
 	  ctx.complete(   HttpResponse(status = StatusCodes.OK, headers = Nil, content = HttpContent(`text/html`,text)))
-	}		
+	}
+	def completeCtxJson(ctx: RequestContext, text: String) = {
+	  ctx.complete(   HttpResponse(status = StatusCodes.OK, headers = Nil, content = HttpContent(`application/json`,text)))
+	}
+	def completeUnauthorizedResponse(ctx: RequestContext) = {
+	  val responseText = "{\"Authorization\": false}"
+	  ctx.complete( HttpResponse(status = StatusCodes.Unauthorized, headers = Nil, content = HttpContent(`application/json`,responseText)))
+	}
+	def requestHeaderDecoded(authorizationHeader: String) = {
+	  var byteArray = Base64.decodeBase64(authorizationHeader.getBytes())
+	  new String((byteArray).map(_.toChar))
+	}
+	def authenticateBasicAuth(headers: List[cc.spray.http.HttpHeader]) = {
+		var authenticated = false
+		try{
+			val authHeaderValueEncoded = headers.filter(_.name == "Authorization")(0).value.split(" ")(1)
+			val authHeaderValueDecoded = requestHeaderDecoded(authHeaderValueEncoded)
+			new Password(authHeaderValueDecoded).isBcrypted(sparcinKey)
+			
+			if(new Password(authHeaderValueDecoded).isBcrypted(sparcinKey)){
+				authenticated = true
+			} else authenticated = false
+	
+		} catch {
+		  case e => 
+		    authenticated = false
+		}
+		
+		authenticated
+	}
 }
 
 

@@ -3,6 +3,8 @@
 <script type="text/javascript" src="/static/jquery.min.js"></script>
 <script language="javascript" type="text/javascript" src="/static/jquery.tablesorter.js"></script>
 <script type="text/javascript" src="/static/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/static/base64.js"></script>
+
 <link href="/static/jquery-ui.css" rel="stylesheet" type="text/css"/>
 <link href="/static/sparc-bootstrap.css" rel="stylesheet" type="text/css" />
 <link href="/static/styles.css" rel="stylesheet" type="text/css" />
@@ -51,14 +53,21 @@
 </div>
 
 <script>
+var apiKey = "sparcin",
+	username = "",
+	password = "",
+	encodedString = "c3BhcmNpbjpzcGFyY2lu";
+
+//base64.encode(username + ":" + password)
 
 var main = {
+	
 	getSimiarityData : function(question, cb) {
-		var apiKey = "sparcin";
 		$.ajax({
 			url: "similarity",
 			type: "GET",
 			contentType: "application/json",
+			beforeSend: function (xhr) { xhr.setRequestHeader ("Authorization", "Basic " + encodedString); },
 			dataType: "json",
 			data: {"q":question, "key":apiKey},
 			success: function(response){
@@ -132,6 +141,7 @@ var main = {
 	        			);
 			}
 		})
+		return false;
 	},
 	addTableSorter : function(){
 		$('#myTable').tablesorter({sortList: [[2,1]]});
@@ -140,6 +150,7 @@ var main = {
 		$.ajax({
 			url: "similarity/"+id+"?key=sparcin",
 			type: "PUT",
+			beforeSend: function (xhr) { xhr.setRequestHeader ("Authorization", "Basic " + encodedString); },
 			headers: {
 				authorization : "test"
 			},
@@ -161,6 +172,7 @@ var main = {
 			url: "similarity/"+id+"?key=sparcin",
 			type: "DELETE",
 			data: {},
+			beforeSend: function (xhr) { xhr.setRequestHeader ("Authorization", "Basic " + encodedString); },
 			success: function(response){
 				var parsedResponse = JSON.parse(response);
 				if(parsedResponse.deleted){

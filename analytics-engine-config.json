@@ -44,6 +44,7 @@
 	"config-values": {
 	    "resource-location": "/usr/local/dict",
 	    "rules-files": "/Users/johndebovis/workspace/analytics-engine/src/main/resources/rule-files",
+	    "classifiers": "/Users/johndebovis/workspace/analytics-engine-resources",
 	    "production-environment": "false"
 	}
 }
