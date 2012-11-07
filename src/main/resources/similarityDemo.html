@@ -20,6 +20,8 @@
 		      <li><a href="http://c.sparcloud.net/">Home</a></li>
 		      <li><a href="http://c.sparcloud.net/semantics">Semantics</a></li>
 		      <li><a href="http://c.sparcloud.net/sparcd">SparcD</a></li>
+		      <li ><a href="http://c.sparcloud.net/semantics/namedEntity">SparcD Nes</a></li>
+		      <li><a href="http://c.sparcloud.net/520">520</a></li>
 		      <li class="active"><a href="/similarityDemo">SparcIN Similarity</a></li>
 		      <li ><a href="/compareDemo">String Comparison</a></li>
 		    </ul>
@@ -156,8 +158,7 @@ var main = {
 			},
 			data: {"document":question},
 			success: function(response){
-				var parsedResponse = JSON.parse(response);
-				if(parsedResponse.created){
+				if(response.created){
 					cb(question);
 				}
 				else alert('problem');
@@ -174,8 +175,7 @@ var main = {
 			data: {},
 			beforeSend: function (xhr) { xhr.setRequestHeader ("Authorization", "Basic " + encodedString); },
 			success: function(response){
-				var parsedResponse = JSON.parse(response);
-				if(parsedResponse.deleted){
+				if(response.deleted){
 					cb(id);
 				}
 				else alert('problem');
@@ -188,12 +188,12 @@ var main = {
 	questionAdded : function(question){
 		alert('Added question: '+ question);
 		$('#question').val('Add a new question');
-		$('#questionPutId').val("Id for question");
+		$('#questionPutId').val("Integer Id for question");
 	},
 	questionDeleted : function(id){
 		alert('Deleted question id: '+id);
 		$('#question').val('Add a new question');
-		$('#questionPutId').val("Id for question");
+		$('#questionPutId').val("Integer Id for question");
 	}
 };
 
@@ -202,7 +202,7 @@ var main = {
 $(function() {
 	var defaultText = 'Ask the wise one.';
 	var putDefaultText = 'Add a new question';
-	var putIdText = "Id for question";
+	var putIdText = "Integer Id for question";
 	var deleteDefaultText = 'Enter Id to Delete a question';
 
 	$('#questionPutId')

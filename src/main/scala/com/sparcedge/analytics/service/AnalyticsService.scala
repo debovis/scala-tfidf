@@ -86,11 +86,12 @@ trait AnalyticsService extends Directives {
 			}
 		}~
 		path("compare") {
-		  get { ctx: RequestContext =>
-		  	if( authenticateBasicAuth(ctx.request.headers) ){
-			    parameters("doc1","doc2") { (doc1,doc2) => ctx:RequestContext =>
-			      simLoadBalancer ! twoStringSimilarityRequest(doc1,doc2, ctx, tfIdfManager,configMap)
-			    }
+		  get { 
+		    parameters("doc1","doc2") { (doc1,doc2) => ctx: RequestContext =>
+			  	if( authenticateBasicAuth(ctx.request.headers) ){
+				      simLoadBalancer ! twoStringSimilarityRequest(doc1,doc2, ctx, tfIdfManager,configMap)
+				}
+			  	else completeUnauthorizedResponse(ctx)
 			}
 		  }
 		}~
