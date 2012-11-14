@@ -26,11 +26,11 @@ import com.sparcedge.analytics.mongodb.MongoCollectionWrapper
 
 trait AnalyticsService extends Directives {
   
-  	var simActors = List[ActorRef]()
-  	for(i <- 1 to 50) {
-  		simActors = Actor.actorOf[SimilarityHandler].start() :: simActors
-  	}
-  	  	
+	var simActors = List[ActorRef]()
+	for(i <- 1 to 50) {
+		simActors = Actor.actorOf[SimilarityHandler].start() :: simActors
+	}
+		
 	val simLoadBalancer = Routing.loadBalancerActor(new CyclicIterator(simActors))
 	var configMap: Map[String,String]
 	
@@ -41,7 +41,6 @@ trait AnalyticsService extends Directives {
 
 	val acceptedTenantJson = Source.fromURL(getClass.getResource("/acceptedTenants.json")).mkString	
 	var tenantKeyMap = (parse(acceptedTenantJson) \ "tenants").asInstanceOf[JObject].values
-	val sparcinKey = tenantKeyMap.get("sparcin").get.asInstanceOf[String]
 	
 	val analyticsService = {
 		pathPrefix("static") {
@@ -49,34 +48,37 @@ trait AnalyticsService extends Directives {
 				getFromResourceDirectory("static")
 			}
 		} ~
-		(pathPrefix("similarity") & parameter("key")) { key => 
+		pathPrefix("similarity") {
 			get {
 				parameter("q") { query => ctx: RequestContext =>
-				  	var authenticated = authenticateBasicAuth(ctx.request.headers)
-				  	if(authenticated){
-				  		simLoadBalancer ! similarityRequest(configMap,query, ctx, tfIdfManager)
-				  	}
-				  	else completeUnauthorizedResponse(ctx)
+					var key = getUsername(ctx.request.headers)
+					var authenticated = authenticateBasicAuth(ctx.request.headers)
+					if(authenticated && key != "" ){
+						simLoadBalancer ! similarityRequest(configMap,query, ctx, tfIdfManager)
+					}
+					else completeUnauthorizedResponse(ctx)
 				}
 			} ~
 			path (IntNumber) { id => 
 				put {
 					formFields("document")  { content => ctx: RequestContext =>
-					  var httpMethod = ctx.request.method.toString()
-					  if(httpMethod == "PUT"){
-					    if( authenticateBasicAuth(ctx.request.headers) ){
-						    tfIdfManager ! AddElement(TfIdfElement(id, "",content,null,false,true,false),key)
-							completeCtxJson(ctx,"{\"created\": true}")
-					    }
-					    else completeUnauthorizedResponse(ctx)
-					  }
+						var key = getUsername(ctx.request.headers)
+						var httpMethod = ctx.request.method.toString()
+						if(httpMethod == "PUT"){
+							var authenticated = authenticateBasicAuth(ctx.request.headers)
+							if( authenticated && key != "" ){
+								tfIdfManager ! AddElement(TfIdfElement(id, "",content,null,false,true,false),key)
+								completeCtxJson(ctx,"{\"created\": true}")
+							} else completeUnauthorizedResponse(ctx)
+						}
 					}		    	
 				} ~
 				delete { ctx: RequestContext =>
+					var key = getUsername(ctx.request.headers)
 					var httpMethod = ctx.request.method.toString()
 					if(httpMethod == "DELETE"){
-						// authenticated?
-						if( authenticateBasicAuth(ctx.request.headers) ){
+						var authenticated = authenticateBasicAuth(ctx.request.headers)
+						if( authenticated && key != "" ){
 							tfIdfManager ! RemoveElement(id,key)
 							completeCtxJson(ctx,"{\"deleted\": true}")
 						}
@@ -87,24 +89,24 @@ trait AnalyticsService extends Directives {
 		}~
 		path("compare") {
 		  get { 
-		    parameters("doc1","doc2") { (doc1,doc2) => ctx: RequestContext =>
-			  	if( authenticateBasicAuth(ctx.request.headers) ){
-				      simLoadBalancer ! twoStringSimilarityRequest(doc1,doc2, ctx, tfIdfManager,configMap)
+			parameters("doc1","doc2") { (doc1,doc2) => ctx: RequestContext =>
+				if( authenticateBasicAuth(ctx.request.headers) ){
+					  simLoadBalancer ! twoStringSimilarityRequest(doc1,doc2, ctx, tfIdfManager,configMap)
 				}
-			  	else completeUnauthorizedResponse(ctx)
+				else completeUnauthorizedResponse(ctx)
 			}
 		  }
 		}~
 		path("compareDemo"){
 		  get { ctx:RequestContext =>
-		    var production = configMap.get("production-environment").get.toBoolean
-		    if(!production){
-		      completeCtxHtml(ctx,compareHtml)
-		    }
-		    else {
-		      completeCtxHtml(ctx,"Not available in production")
-		    }
-		    
+			var production = configMap.get("production-environment").get.toBoolean
+			if(!production){
+			  completeCtxHtml(ctx,compareHtml)
+			}
+			else {
+			  completeCtxHtml(ctx,"Not available in production")
+			}
+			
 		  }
 		}~
 		path("similarityDemo") {
@@ -127,9 +129,10 @@ trait AnalyticsService extends Directives {
 	}
 	def completeUnauthorizedResponse(ctx: RequestContext) = {
 	  val responseText = "{\"Authorization\": false}"
-	  ctx.complete( HttpResponse(status = StatusCodes.Unauthorized, headers = Nil, content = HttpContent(`application/json`,responseText)))
+	  val response = HttpResponse(status = StatusCodes.Unauthorized, headers = Nil, content = HttpContent(`application/json`,responseText))
+	  ctx.complete(response )
 	}
-	def requestHeaderDecoded(authorizationHeader: String) = {
+	def requestHeaderDecoded(authorizationHeader: String): String = {
 	  var byteArray = Base64.decodeBase64(authorizationHeader.getBytes())
 	  new String((byteArray).map(_.toChar))
 	}
@@ -138,18 +141,35 @@ trait AnalyticsService extends Directives {
 		try{
 			val authHeaderValueEncoded = headers.filter(_.name == "Authorization")(0).value.split(" ")(1)
 			val authHeaderValueDecoded = requestHeaderDecoded(authHeaderValueEncoded)
-			new Password(authHeaderValueDecoded).isBcrypted(sparcinKey)
 			
-			if(new Password(authHeaderValueDecoded).isBcrypted(sparcinKey)){
+			val username = authHeaderValueDecoded.split(":")(0)
+
+			// get the bcrypt value on file for the username passed in auth header
+			val bcryptValue = tenantKeyMap.get(username).get.asInstanceOf[String]
+			
+			if(new Password(authHeaderValueDecoded).isBcrypted(bcryptValue)){
 				authenticated = true
 			} else authenticated = false
 	
 		} catch {
-		  case e => 
-		    authenticated = false
+			  case e => 
+				authenticated = false
 		}
 		
 		authenticated
+	}
+
+	def getUsername(headers: List[cc.spray.http.HttpHeader]): String = {
+	  var username = ""
+	  try {
+			val authHeaderValueEncoded = new String(headers.filter(_.name == "Authorization")(0).value).split(" ")(1)
+			username = requestHeaderDecoded(authHeaderValueEncoded).split(":").head
+
+	  } catch {
+			case e =>
+				println(e.toString)
+		}
+		username
 	}
 }
 

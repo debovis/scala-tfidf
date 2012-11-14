@@ -48,10 +48,7 @@
 </div>
 
 <script>
-var apiKey = "sparcin",
-	username = "",
-	password = "",
-	encodedString = "c3BhcmNpbjpzcGFyY2lu";
+var encodedString = "c3BhcmNpbjpzcGFyY2lu";
 
 
 var main = {
@@ -61,7 +58,9 @@ var main = {
 			type: "GET",
 			contentType: "application/json",
 			dataType: "json",
-			beforeSend: function (xhr) { xhr.setRequestHeader ("Authorization", "Basic " + encodedString); },
+			beforeSend: function (xhr) { 
+				xhr.setRequestHeader ("Authorization", "Basic " + encodedString); 
+			},
 			data: {"doc1":string1, "doc2":string2 },
 			success: function(response){
 				//console.log(response.similarity)

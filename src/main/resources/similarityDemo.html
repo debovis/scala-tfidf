@@ -55,104 +55,101 @@
 </div>
 
 <script>
-var apiKey = "sparcin",
-	username = "",
-	password = "",
-	encodedString = "c3BhcmNpbjpzcGFyY2lu";
+var encodedString = "c3BhcmNpbjpzcGFyY2lu",
+	main = {
+		getSimiarityData : function(question, cb) {
+			$.ajax({
+				url: "similarity",
+				type: "GET",
+				contentType: "application/json",
+				beforeSend: function (xhr) { 
+					xhr.setRequestHeader ("Authorization", "Basic " + encodedString); 
+				},
+				dataType: "json",
+				data: {"q":question},
+				success: function(response){
+					$('#data').empty();
+					var globalData = {};
+					var items = response.similarity;
 
-//base64.encode(username + ":" + password)
+					if (typeof items === 'string') {
+						$('#data')
+		        			.empty()
+		        			.append(
+		        				$('<p />')
+		        					.addClass('response response-warning')
+		        					.html('No responses for your question.')
+		        			);
 
-var main = {
-	
-	getSimiarityData : function(question, cb) {
-		$.ajax({
-			url: "similarity",
-			type: "GET",
-			contentType: "application/json",
-			beforeSend: function (xhr) { xhr.setRequestHeader ("Authorization", "Basic " + encodedString); },
-			dataType: "json",
-			data: {"q":question, "key":apiKey},
-			success: function(response){
-				$('#data').empty();
-				var globalData = {};
-				var items = response.similarity;
-
-				if (typeof items === 'string') {
-					$('#data')
-	        			.empty()
-	        			.append(
-	        				$('<p />')
-	        					.addClass('response response-warning')
-	        					.html('No responses for your question.')
-	        			);
-
-					return;
-				}
-				// add questions
-				if(items.length){
-					for(var j= items.length;j--;){
-						var item = items[j]
-						globalData[item.id] = {'question':item.document, "simScore" : item.similarityScore}
+						return;
 					}
-					var $table = $('#data'),
-						$compdoc = $('#comparisonDocument'),
-						items = globalData,
-						firstHeader = 'ID',
-						secondHeader = 'Question',
-						thirdHeader = 'Similarity',
-						tableHTML = '<table dir="ltr" class="tablesorter table table-striped table-bordered" id="myTable" summary="purpose/structure for speech output">'+
-		                        '<colgroup width="20%" />'+
-		                        '<colgroup id="colgroup" class="" title="title" span="3" />'+
-		                        '<thead> <tr>  <th>'+firstHeader+'</th> <th>'+secondHeader+'</th><th>'+thirdHeader+'</th> </tr> </thead><tbody>';
-			        for(var key in globalData){
-			            var title = key;
-			            var value = globalData[key].question;
-			            var sim = globalData[key].simScore ? globalData[key].simScore : 0;
-			            if(sim){
-			            	sim = Math.round(sim*100);
-			            }
-			            tableHTML += '<tr><td>'+ title+'</td><td>'+ value +'</td><td>'+sim+'%</td></tr>'
+					// add questions
+					if(items.length){
+						for(var j= items.length;j--;){
+							var item = items[j]
+							globalData[item.id] = {'question':item.document, "simScore" : item.similarityScore}
+						}
+						var $table = $('#data'),
+							$compdoc = $('#comparisonDocument'),
+							items = globalData,
+							firstHeader = 'ID',
+							secondHeader = 'Question',
+							thirdHeader = 'Similarity',
+							tableHTML = '<table dir="ltr" class="tablesorter table table-striped table-bordered" id="myTable" summary="purpose/structure for speech output">'+
+			                        '<colgroup width="20%" />'+
+			                        '<colgroup id="colgroup" class="" title="title" span="3" />'+
+			                        '<thead> <tr>  <th>'+firstHeader+'</th> <th>'+secondHeader+'</th><th>'+thirdHeader+'</th> </tr> </thead><tbody>';
+				        for(var key in globalData){
+				            var title = key;
+				            var value = globalData[key].question;
+				            var sim = globalData[key].simScore ? globalData[key].simScore : 0;
+				            if(sim){
+				            	sim = Math.round(sim*100);
+				            }
+				            tableHTML += '<tr><td>'+ title+'</td><td>'+ value +'</td><td>'+sim+'%</td></tr>'
+			        	}
+
+			        	tableHTML += '</tbody></table>';
+			        	$table.append(tableHTML);
+
+			        	// add compdoc
+			        	$compdoc.html("Question asked: "  + question);
+
+			        	cb();
 		        	}
+		        	else {
+		        		$('#data')
+		        			.empty()
+		        			.append(
+		        				$('<p />')
+		        					.addClass('response response-error')
+		        					.html('Error loading data.')
+		        			);
 
-		        	tableHTML += '</tbody></table>';
-		        	$table.append(tableHTML);
-
-		        	// add compdoc
-		        	$compdoc.html("Question asked: "  + question);
-
-		        	cb();
-	        	}
-	        	else {
-	        		$('#data')
-	        			.empty()
-	        			.append(
-	        				$('<p />')
-	        					.addClass('response response-error')
-	        					.html('Error loading data.')
-	        			);
-
-	        	}
-			},
-			error: function(response){
-				$('#data')
-	        			.empty()
-	        			.append(
-	        				$('<p />')
-	        					.addClass('response response-error')
-	        					.html('Error loading data.')
-	        			);
-			}
-		})
-		return false;
-	},
+		        	}
+				},
+				error: function(response){
+					$('#data')
+		        			.empty()
+		        			.append(
+		        				$('<p />')
+		        					.addClass('response response-error')
+		        					.html('Error loading data.')
+		        			);
+				}
+			})
+			return false;
+		},
 	addTableSorter : function(){
 		$('#myTable').tablesorter({sortList: [[2,1]]});
 	},
 	putSimilarityData : function(question,id,cb){
 		$.ajax({
-			url: "similarity/"+id+"?key=sparcin",
+			url: "similarity/"+id,
 			type: "PUT",
-			beforeSend: function (xhr) { xhr.setRequestHeader ("Authorization", "Basic " + encodedString); },
+			beforeSend: function (xhr) { 
+				xhr.setRequestHeader ("Authorization", "Basic " + encodedString); 
+			},
 			headers: {
 				authorization : "test"
 			},
@@ -170,10 +167,12 @@ var main = {
 	},
 	deleteSimilarityData : function(id,cb){
 		$.ajax({
-			url: "similarity/"+id+"?key=sparcin",
+			url: "similarity/"+id,
 			type: "DELETE",
 			data: {},
-			beforeSend: function (xhr) { xhr.setRequestHeader ("Authorization", "Basic " + encodedString); },
+			beforeSend: function (xhr) { 
+				xhr.setRequestHeader ("Authorization", "Basic " + encodedString); 
+			},
 			success: function(response){
 				if(response.deleted){
 					cb(id);
