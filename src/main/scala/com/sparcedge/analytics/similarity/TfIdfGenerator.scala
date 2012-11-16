@@ -57,9 +57,12 @@ class TfIdfGenerator(	var documents: List[TfIdfElement],
   }
 
   def getText(text:String) = {
-    if(text == null || text.length() ==0){
+    if(text == null){
 			throw new Exception("document was invalid, check DB import");
-	} else text;
+	  } else if ( text.length() ==0){
+      log.debug("string was found to be empty")
+    }
+     else text;
   }
   def updateMatricies = {
     generateTfMatrix
