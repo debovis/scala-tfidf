@@ -59,8 +59,9 @@ class TfIdfGenerator(	var documents: List[TfIdfElement],
   def getText(text:String) = {
     if(text == null){
 			throw new Exception("document was invalid, check DB import");
-	  } else if ( text.length() ==0){
+	  } else if ( text.length() == 0){
       log.debug("string was found to be empty")
+      text;
     }
      else text;
   }
